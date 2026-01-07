@@ -80,6 +80,11 @@
 
     <!-- SCRIPT WEBSOCKET -->
     <script>
+        // --- SONIDO ---
+        // Usamos una sirena corta alojada en internet para probar
+        const sirena = new Audio('https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3'); 
+        sirena.loop = true; // Que suene repetidamente
+
         // Determinar protocolo (ws:// en local, wss:// en prod)
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
@@ -121,12 +126,15 @@
             // Vibrar el celular (API nativa)
             if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
             
-            // Sonido (Opcional, requiere interacción previa del usuario)
-            // playSiren(); 
+            // 2. SONAR (Intentar reproducir)
+            sirena.currentTime = 0;
+            sirena.play().catch(e => console.log("El navegador bloqueó el sonido automático:", e)); 
         }
 
         function cerrarAlerta() {
             document.getElementById('alerta-overlay').classList.add('hidden');
+            sirena.pause(); // Detener sonido
+            sirena.currentTime = 0; // Resetear
         }
     </script>
 
