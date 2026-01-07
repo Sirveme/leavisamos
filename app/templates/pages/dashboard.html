@@ -58,4 +58,77 @@
     </section>
 
 </div>
+
+<!-- BOTÓN DE PÁNICO FLOTANTE -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button id="btn-panico" 
+                class="w-16 h-16 bg-red-600 rounded-full shadow-lg shadow-red-600/50 flex items-center justify-center animate-pulse text-white border-4 border-red-800 active:scale-90 transition-transform">
+            <i class="ph ph-siren text-3xl"></i>
+        </button>
+    </div>
+
+    <!-- PANTALLA DE ALERTA (Oculta por defecto) -->
+    <div id="alerta-overlay" class="fixed inset-0 bg-red-600 z-50 flex flex-col items-center justify-center text-white hidden">
+        <i class="ph ph-warning-octagon text-8xl mb-4 animate-bounce"></i>
+        <h1 class="text-4xl font-bold text-center px-4">¡ALERTA ACTIVADA!</h1>
+        <p id="alerta-msg" class="mt-2 text-xl opacity-90">Un vecino necesita ayuda</p>
+        
+        <button onclick="cerrarAlerta()" class="mt-10 px-8 py-3 bg-white text-red-600 rounded-full font-bold shadow-xl">
+            ENTENDIDO
+        </button>
+    </div>
+
+    <!-- SCRIPT WEBSOCKET -->
+    <script>
+        // Determinar protocolo (ws:// en local, wss:// en prod)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
+        
+        console.log("Conectando a:", wsUrl);
+        const socket = new WebSocket(wsUrl);
+
+        // 1. Al recibir mensaje del servidor
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Mensaje recibido:", data);
+
+            if (data.type === "ALERTA_CRITICA") {
+                mostrarAlerta(data);
+            }
+        };
+
+        // 2. Al presionar el botón de pánico
+        const btnPanico = document.getElementById('btn-panico');
+        
+        // Evento para móvil (Touch) y PC (Click)
+        // Usaremos lógica simple: Click = Disparo inmediato (luego haremos "mantener presionado")
+        btnPanico.addEventListener('click', () => {
+            if (confirm("¿Estás seguro de activar la ALERTA VECINAL?")) {
+                socket.send(JSON.stringify({
+                    type: "PANIC_BUTTON"
+                }));
+            }
+        });
+
+        // Funciones visuales
+        function mostrarAlerta(data) {
+            const overlay = document.getElementById('alerta-overlay');
+            const msg = document.getElementById('alerta-msg');
+            
+            msg.innerText = `${data.user}: ${data.msg}`;
+            overlay.classList.remove('hidden');
+            
+            // Vibrar el celular (API nativa)
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
+            
+            // Sonido (Opcional, requiere interacción previa del usuario)
+            // playSiren(); 
+        }
+
+        function cerrarAlerta() {
+            document.getElementById('alerta-overlay').classList.add('hidden');
+        }
+    </script>
+
+
 {% endblock %}
