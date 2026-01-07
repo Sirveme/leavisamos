@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/pages/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<div class="fade-me-in">
+    
+    <!-- Cabecera -->
+    <header class="header-section">
+        <div class="user-welcome">
+            <h2>Hola, {{ user.name.split(' ')[0] }}</h2>
+            <p>{{ user.unit_info }}</p>
+        </div>
+        <button class="logout-btn" title="Salir">
+            <i class="ph ph-sign-out"></i>
+        </button>
+    </header>
+
+    <!-- Tarjeta de Deuda -->
+    <section class="balance-card">
+        <span class="balance-label">Deuda Pendiente</span>
+        <span class="balance-amount">{{ deuda }}</span>
+        <div class="balance-footer">
+            <span>Vence: {{ vencimiento }}</span>
+            <span class="flex items-center gap-1">
+                <i class="ph ph-warning-circle"></i> Pagar
+            </span>
+        </div>
+    </section>
+
+    <!-- Menú de Acciones -->
+    <section class="menu-grid">
+        <!-- Botón Historial -->
+        <div class="menu-item">
+            <i class="ph ph-receipt menu-icon"></i>
+            <span class="menu-title">Mis Recibos</span>
+        </div>
+        
+        <!-- Botón Avisos -->
+        <div class="menu-item">
+            <i class="ph ph-megaphone menu-icon"></i>
+            <span class="menu-title">Avisos</span>
+        </div>
+
+        <!-- Botón Votación (Demo) -->
+        <div class="menu-item">
+            <i class="ph ph-hands-clapping menu-icon text-green-400"></i> <!-- Color distinto -->
+            <span class="menu-title">Votar</span>
+        </div>
+
+        <!-- Botón Reportar -->
+        <div class="menu-item">
+            <i class="ph ph-wrench menu-icon text-orange-400"></i>
+            <span class="menu-title">Reportar</span>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

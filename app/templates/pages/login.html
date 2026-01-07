@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+<!-- Inyectar CSS específico de esta página -->
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/pages/login.css">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    
+    <div class="login-header">
+        <div class="logo-box">
+            <i class="ph ph-buildings"></i>
+        </div>
+        <h1>Bienvenido</h1>
+        <p>Gestiona tu comunidad.</p>
+    </div>
+
+    <!-- El formulario usa HTMX para enviar al backend que acabamos de crear -->
+    <form class="login-form" hx-post="/auth/login" hx-target="#content-area" hx-swap="innerHTML">
+        
+        <div class="form-group">
+            <label>Identificación</label>
+            <div class="input-wrapper">
+                <i class="ph ph-identification-card input-icon"></i>
+                <input type="text" name="dni" placeholder="DNI / Matrícula" required class="input-field" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Código de Acceso</label>
+            <div class="input-wrapper">
+                <i class="ph ph-lock-key input-icon"></i>
+                
+                <!-- ID necesario para el JS -->
+                <input type="password" id="password-input" name="code" placeholder="Código de factura" required class="input-field">
+                
+                <!-- Botón Toggle (Manejado por login.js) -->
+                <button type="button" id="toggle-password-btn" class="eye-btn">
+                    <i class="ph ph-eye" id="icon-eye"></i>
+                    <i class="ph ph-eye-slash hidden" id="icon-eye-slash"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <span>Ingresar</span>
+            <i class="ph ph-arrow-right"></i>
+        </button>
+
+    </form>
+
+    <div class="login-footer">
+        <p><i class="ph ph-shield-check"></i> Acceso Seguro v1.0</p>
+    </div>
+
+</div>
+
+<!-- Inyectar JS específico de esta página al final -->
+<script src="/static/js/pages/login.js"></script>
+{% endblock %}

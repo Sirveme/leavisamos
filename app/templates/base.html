@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NotiSAAS</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- CSS Propio (Lo importante) -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Tailwind CDN (Solo para layout rápido: flex, grid, margin, padding) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/_hyperscript.org@0.9.12"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Bloque para inyectar CSS extra desde páginas hijas -->
+    {% block head_extra %}{% endblock %}
+
+    <!-- CSS DINÁMICO SEGÚN DOMINIO -->
+    <style>
+        :root {
+            /* Si theme existe, usa su color, si no, usa el default */
+            --primary: {{ theme.primary_color if theme else '#6366f1' }};
+        }
+        
+        /* Forzar color de la barra HTMX */
+        .htmx-progress-bar {
+            background-color: var(--primary) !important;
+        }
+        
+        /* Forzar color de selección de texto */
+        ::selection {
+            background-color: var(--primary);
+            color: white;
+        }
+    </style>
+
+</head>
+
+<body class="flex justify-center h-screen overflow-hidden bg-black">
+
+    <!-- Contenedor Principal (Mobile First) -->
+    <main class="w-full max-w-md h-full bg-[#0f172a] shadow-2xl relative flex flex-col border-x border-slate-800">
+        
+        <!-- Barra de Progreso (Ahora vive DENTRO del main) -->
+        <div class="htmx-progress-container">
+            <div id="progress-bar" class="htmx-progress-bar"></div>
+        </div>
+        
+        <!-- Contenido -->
+        <div id="content-area" class="flex-1 overflow-y-auto no-scrollbar p-6">
+            {% block content %}{% endblock %}
+        </div>
+
+    </main>
+
+    <script>
+        // Lógica de carga visual para HTMX
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            let bar = document.getElementById('progress-bar');
+            bar.style.width = '30%';
+            bar.style.opacity = '1';
+        });
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            let bar = document.getElementById('progress-bar');
+            bar.style.width = '100%';
+            setTimeout(() => {
+                bar.style.opacity = '0';
+                bar.style.width = '0%';
+            }, 300);
+        });
+        
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js');
+    </script>
+</body>
+</html>
