@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
 from .database import engine, Base
-from .routers import auth, dashboard
+from .routers import auth, dashboard, ws
 from .config import THEMES
 
 # Base.metadata.create_all(bind=engine) # Descomentar solo si usas SQLite local
@@ -32,6 +32,7 @@ async def add_domain_context(request: Request, call_next):
 # --- RUTAS ---
 app.include_router(auth.router)
 app.include_router(dashboard.router)
+app.include_router(ws.router)
 
 @app.get("/service-worker.js")
 async def get_service_worker():
