@@ -86,122 +86,84 @@
     <!-- SCRIPT WEBSOCKET -->
     <script>
         // --- SONIDO ---
-        // Usamos una sirena corta alojada en internet para probar
-        const sirena = new Audio('static/sounds/siren.mp3'); 
-        sirena.loop = true; // Que suene repetidamente
+        // Asegúrate de que este archivo exista en Railway
+        const sirena = new Audio('/static/audio/sirena.mp3'); 
+        sirena.loop = true; 
 
-        // Determinar protocolo (ws:// en local, wss:// en prod)
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
-        
-        console.log("Conectando a:", wsUrl);
-        const socket = new WebSocket(wsUrl);
-
-        // 1. Al recibir mensaje del servidor
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            console.log("Mensaje recibido:", data);
-
-            if (data.type === "ALERTA_CRITICA") {
-                mostrarAlerta(data);
-            }
-        };
-
-        // --- DATOS DEL USUARIO (Inyectados por Jinja2 desde el Backend) ---
+        // --- DATOS USUARIO ---
+        const VAPID_PUBLIC_KEY = "{{ vapid_public_key }}";
         const currentUserName = "{{ user.name }}"; 
         const currentUserUnit = "{{ user.unit_info }}";
 
-        // 2. Al presionar el botón de pánico
+        // --- WEBSOCKET ---
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
+        
+        let socket;
+        let isAlertActive = false; // Para evitar reconexiones ruidosas
+
+        function connectWebSocket() {
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => console.log("🟢 WS Conectado");
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === "ALERTA_CRITICA") {
+                    mostrarAlerta(data);
+                }
+            };
+
+            socket.onclose = () => {
+                console.log("🔴 WS Desconectado. Reintentando en 3s...");
+                setTimeout(connectWebSocket, 3000); // Reconexión automática
+            };
+        }
+        
+        // Iniciar conexión
+        connectWebSocket();
+
+        // --- BOTÓN DE PÁNICO ---
         const btnPanico = document.getElementById('btn-panico');
         
-        // Evento para móvil (Touch) y PC (Click)
-        // Usaremos lógica simple: Click = Disparo inmediato (luego haremos "mantener presionado")
         btnPanico.addEventListener('click', () => {
-            // Desbloquear audio preventivamente
+            // Desbloquear audio (truco para móviles)
             sirena.play().then(() => sirena.pause()).catch(e=>{});
 
             if (confirm("¿ACTIVAR ALERTA VECINAL?")) {
-                // 1. DISPARO INMEDIATO (Sin esperar GPS)
-                // Esto elimina el delay de 5 segundos
+                // Disparo inmediato
                 socket.send(JSON.stringify({
                     type: "PANIC_BUTTON",
                     user: `${currentUserName} (${currentUserUnit})`,
-                    location: "Obteniendo GPS...",
+                    location: "Ubicación pendiente...",
                     coords: null
                 }));
 
-                // 2. BUSCAR GPS EN SEGUNDO PLANO
+                // GPS en segundo plano
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
-                            // Cuando tengamos coordenadas, enviamos ACTUALIZACIÓN
-                            socket.send(JSON.stringify({
-                                type: "GPS_UPDATE", // Nuevo tipo de mensaje
-                                coords: { 
-                                    lat: position.coords.latitude, 
-                                    lon: position.coords.longitude 
-                                }
-                            }));
+                            if(socket.readyState === WebSocket.OPEN){
+                                socket.send(JSON.stringify({
+                                    type: "GPS_UPDATE",
+                                    coords: { 
+                                        lat: position.coords.latitude, 
+                                        lon: position.coords.longitude 
+                                    }
+                                }));
+                            }
                         },
-                        (error) => console.warn("GPS falló", error),
-                        { enableHighAccuracy: true, timeout: 10000 } // Ya no bloquea el envío
+                        (err) => console.log("GPS Error", err),
+                        { enableHighAccuracy: true, timeout: 10000 }
                     );
                 }
             }
         });
 
-        function enviarAlerta(lat, lon, estadoGPS) {
-            // Reproducir sonido "muco" para desbloquear audio
-            sirena.play().then(() => sirena.pause()).catch(e=>{});
-
-            socket.send(JSON.stringify({
-                type: "PANIC_BUTTON",
-                user: `${currentUserName} (${currentUserUnit})`,
-                location: estadoGPS,
-                coords: { lat: lat, lon: lon }
-            }));
-            
-            btnPanico.classList.remove('opacity-50');
-        }
-
-        // Funciones visuales
-        // --- ACTUALIZAR VISUALIZADOR ---
-        function mostrarAlerta(data) {
-            const overlay = document.getElementById('alerta-overlay');
-            const msg = document.getElementById('alerta-msg');
-            
-            // Mensaje enriquecido
-            msg.innerHTML = `
-                <strong class="text-2xl block mb-2">${data.user}</strong>
-                <span class="text-sm bg-white/20 px-2 py-1 rounded">${data.msg}</span>
-                ${data.coords && data.coords.lat ? 
-                `<a href="https://maps.google.com/?q=${data.coords.lat},${data.coords.lon}" target="_blank" class="block mt-4 underline text-white font-bold">Ver en Mapa 📍</a>` 
-                : ''}
-            `;
-            
-            overlay.classList.remove('hidden');
-            
-            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
-            sirena.currentTime = 0;
-            sirena.play().catch(e => console.log("Bloqueo navegador"));
-        }
-
-        function cerrarAlerta() {
-            document.getElementById('alerta-overlay').classList.add('hidden');
-            sirena.pause(); // Detener sonido
-            sirena.currentTime = 0; // Resetear
-        }
-
-
-        // --- PUSH NOTIFICATIONS ---
-        const VAPID_PUBLIC_KEY = "{{ vapid_public_key }}";
-
-        // Función para convertir la llave a formato Uint8Array (Requerido por el navegador)
+        // --- PUSH NOTIFICATIONS & HUELLA DIGITAL ---
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding)
-                .replace(/\-/g, '+')
-                .replace(/_/g, '/');
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
             for (let i = 0; i < rawData.length; ++i) {
@@ -211,24 +173,15 @@
         }
 
         async function activarNotificaciones() {
-            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                console.log("Push no soportado en este navegador");
-                return;
-            }
+            if (!('serviceWorker' in navigator)) return;
 
             // 1. Pedir permiso
             const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                alert("Necesitas activar las notificaciones para recibir alertas de seguridad.");
-                return;
-            }
+            if (permission !== 'granted') return;
 
-            // 2. Obtener la suscripción del Service Worker
             const registration = await navigator.serviceWorker.ready;
-            
             let subscription = await registration.pushManager.getSubscription();
             
-            // Si no existe, crearla
             if (!subscription) {
                 subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
@@ -236,35 +189,61 @@
                 });
             }
 
-            // 3. Recolectar Huella Digital
-            const fingerprint = {
-                platform: navigator.platform || 'Desconocido',
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                // Detectar si es PWA (Standalone)
-                is_pwa: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-            };
+            // 2. RECOLECTAR HUELLA DIGITAL (Aquí estaba el problema)
+            // Obtenemos Timezone y Platform
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const platform = navigator.platform || 'Desconocido';
+            // Detectar si es PWA
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-            // 4. Enviar TODO al Backend
+            // 3. ENVIAR AL BACKEND
+            console.log("Enviando detalles:", { timezone, platform, isPWA }); // Debug
+            
             await fetch('/api/push/subscribe', {
                 method: 'POST',
                 body: JSON.stringify({
                     subscription: subscription,
-                    details: fingerprint // <-- Enviamos los detalles extra
+                    details: {
+                        timezone: timezone,
+                        platform: platform,
+                        is_pwa: isPWA
+                    }
                 }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-            
-            console.log("✅ Suscripción Push enviada al servidor");
-            alert("¡Alertas activadas correctamente!");
+            alert("Notificaciones activadas y dispositivo registrado.");
         }
 
-        // --- BOTÓN PARA ACTIVAR (Puedes ponerlo en el menú o que salga automático) ---
-        // Por ahora, preguntamos al cargar si no está activo
-        if (Notification.permission === 'default') {
-            // Sugerencia: Mejor poner un botón visible que diga "Activar Alertas"
-            // activarNotificaciones(); 
+        // --- FUNCIONES VISUALES ---
+        function mostrarAlerta(data) {
+            if (isAlertActive) return; // Evitar disparar doble si ya está sonando
+            isAlertActive = true;
+
+            const overlay = document.getElementById('alerta-overlay');
+            const msg = document.getElementById('alerta-msg');
+            
+            msg.innerHTML = `
+                <strong class="text-2xl block mb-2">${data.user}</strong>
+                <span class="text-sm bg-white/20 px-2 py-1 rounded">${data.msg}</span>
+            `;
+            
+            overlay.classList.remove('hidden');
+            
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
+            
+            sirena.currentTime = 0;
+            sirena.play().catch(e => console.log("Audio bloqueado:", e));
+        }
+
+        function cerrarAlerta() {
+            // APAGADO VIOLENTO DEL SONIDO
+            sirena.pause();
+            sirena.currentTime = 0;
+            isAlertActive = false;
+            
+            document.getElementById('alerta-overlay').classList.add('hidden');
         }
     </script>
 
