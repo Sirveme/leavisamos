@@ -43,7 +43,7 @@ async def login(
         httponly=True,
         max_age=2592000, # 30 días
         samesite="lax",
-        secure=False # Cambiar a True cuando subas a Railway (HTTPS)
+        secure=True # Cambiar a True cuando subas a Railway (HTTPS)
     )
     
     # 6. Redirección HTMX
