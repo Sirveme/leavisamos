@@ -41,12 +41,17 @@ class Device(Base):
     id = Column(Integer, primary_key=True, index=True)
     member_id = Column(Integer, ForeignKey("members.id"))
     
-    user_agent = Column(String)
-    
-    # Esto es CRÍTICO para Web Push API
-    push_endpoint = Column(Text) 
+    # Datos Técnicos
+    push_endpoint = Column(Text, unique=True) # Endpoint único
     push_p256dh = Column(String)
     push_auth = Column(String)
+    
+    # Huella Digital
+    user_agent = Column(String)     # "Mozilla/5.0..."
+    platform = Column(String)       # "Win32", "Linux armv81", "iPhone"
+    browser = Column(String)        # "Chrome", "Safari" (Opcional, se saca del UA)
+    is_pwa = Column(Boolean, default=False) # ¿Está instalada?
+    timezone = Column(String)       # "America/Lima"
     
     is_active = Column(Boolean, default=True)
     last_seen = Column(DateTime(timezone=True), server_default=func.now())
