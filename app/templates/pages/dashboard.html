@@ -117,30 +117,36 @@
         // Evento para móvil (Touch) y PC (Click)
         // Usaremos lógica simple: Click = Disparo inmediato (luego haremos "mantener presionado")
         btnPanico.addEventListener('click', () => {
-            // 1. Validar confirmación
-            if (!confirm("¿ACTIVAR ALERTA VECINAL?")) return;
+            // Desbloquear audio preventivamente
+            sirena.play().then(() => sirena.pause()).catch(e=>{});
 
-            // 2. Intentar obtener GPS antes de enviar
-            if ("geolocation" in navigator) {
-                btnPanico.classList.add('opacity-50'); // Feedback visual
-                
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        // ÉXITO: Tenemos coordenadas
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        enviarAlerta(lat, lon, "GPS Activo");
-                    },
-                    (error) => {
-                        // ERROR: El usuario negó permiso o falló el GPS
-                        console.warn("No se pudo obtener GPS", error);
-                        enviarAlerta(null, null, "GPS No disponible (Edificio)");
-                    },
-                    { enableHighAccuracy: true, timeout: 5000 } // 5 seg máx para buscar satélites
-                );
-            } else {
-                enviarAlerta(null, null, "Dispositivo sin GPS");
+            if (confirm("¿ACTIVAR ALERTA VECINAL?")) {
+                // 1. DISPARO INMEDIATO (Sin esperar GPS)
+                // Esto elimina el delay de 5 segundos
+                socket.send(JSON.stringify({
+                    type: "PANIC_BUTTON",
+                    user: `${currentUserName} (${currentUserUnit})`,
+                    location: "Obteniendo GPS...",
+                    coords: null
+                }));
+
+                // 2. BUSCAR GPS EN SEGUNDO PLANO
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            // Cuando tengamos coordenadas, enviamos ACTUALIZACIÓN
+                            socket.send(JSON.stringify({
+                                type: "GPS_UPDATE", // Nuevo tipo de mensaje
+                                coords: { 
+                                    lat: position.coords.latitude, 
+                                    lon: position.coords.longitude 
+                                }
+                            }));
+                        },
+                        (error) => console.warn("GPS falló", error),
+                        { enableHighAccuracy: true, timeout: 10000 } // Ya no bloquea el envío
+                    );
+                }
             }
         });
 
