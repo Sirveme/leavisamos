@@ -8,6 +8,8 @@ from jose import jwt, JWTError
 from app.config import SECRET_KEY # Asegúrate que esto exista en config.py
 from app.utils.security import ALGORITHM
 
+import os
+
 router = APIRouter(tags=["dashboard"])
 templates = Jinja2Templates(directory="app/templates")
 
@@ -42,13 +44,14 @@ def get_current_member(access_token: str = Cookie(None), db: Session = Depends(g
 
 @router.get("/dashboard")
 async def dashboard_home(request: Request, member: Member = Depends(get_current_member)):
-    # Recuperamos el tema que el middleware guardó
-    current_theme = getattr(request.state, "theme", None) 
+    current_theme = getattr(request.state, "theme", None)
     
     return templates.TemplateResponse("pages/dashboard.html", {
         "request": request,
         "user": member,
         "deuda": "S/ 150.00",
         "vencimiento": "15 Ene 2024",
-        "theme": current_theme  # <--- AGREGAR ESTO
+        "theme": current_theme,
+        # AGREGAMOS ESTO:
+        "vapid_public_key": os.getenv("VAPID_PUBLIC_KEY") 
     })

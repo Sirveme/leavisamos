@@ -7,22 +7,24 @@ router = APIRouter(tags=["websockets"])
 
 @router.websocket("/ws/alerta")
 async def websocket_endpoint(websocket: WebSocket):
-    # 1. Aceptar la conexión (El vecino abrió la app)
     await manager.connect(websocket)
-    
     try:
         while True:
-            # 2. Esperar mensajes del cliente
             data = await websocket.receive_json()
             
-            # 3. Si llega una alerta, REENVIARLA A TODOS
+            # --- LÓGICA DE PÁNICO ---
             if data.get("type") == "PANIC_BUTTON":
-                # Aquí podrías guardar el evento en BD: "Juan activó pánico"
+                # Extraemos datos que vienen del cliente
+                usuario = data.get("user", "Desconocido")
+                ubicacion = data.get("location", "Sin GPS")
+                coords = data.get("coords", None) # {lat: -12..., lon: -77...}
                 
+                # Reenviamos a TODOS con los datos enriquecidos
                 await manager.broadcast({
                     "type": "ALERTA_CRITICA",
-                    "user": "Vecino (Demo)", # Luego pondremos el nombre real
-                    "msg": "¡ALERTA DE SEGURIDAD ACTIVADA!"
+                    "user": usuario,
+                    "msg": f"¡ALERTA ACTIVADA! Ubicación: {ubicacion}",
+                    "coords": coords # Para mostrar mapa en el futuro
                 })
                 
     except WebSocketDisconnect:
