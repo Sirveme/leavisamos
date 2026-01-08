@@ -1,45 +1,27 @@
-const CACHE_NAME = 'notisaas-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/static/css/styles.css',
-  '/manifest.json'
-];
-
-self.addEventListener('install', (event) => {
-  // Forzar activación inmediata
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
-});
-
-// Fetch básico para eliminar el warning "no-op"
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});
-
+// static/service-worker.js
 
 self.addEventListener('push', function(event) {
-  const data = event.data.json();
-  
+  console.log('Push Recibido:', event);
+
+  let data = { title: 'Alerta', body: 'Nueva notificación', url: '/dashboard' };
+
+  if (event.data) {
+    data = event.data.json();
+  }
+
   const options = {
     body: data.body,
-    icon: '/static/images/icon-192.png', // Asegúrate que exista
-    vibrate: [500, 200, 500, 200, 500],
-    data: { url: '/dashboard' }, // Para abrir al hacer clic
-    requireInteraction: true, // Se queda en pantalla hasta que el usuario toque
+    icon: data.icon || '/static/images/icon-192.png',
+    badge: '/static/images/icon-192.png', // Icono pequeño en barra de estado (Android)
+    vibrate: [1000, 500, 1000, 500, 1000], // Patrón de vibración agresivo (SOS)
+    data: { 
+        url: data.url 
+    },
+    tag: 'alerta-panico', // Agrupa notificaciones para no llenar la barra
+    renotify: true, // Vuelve a vibrar aunque ya haya una notificación ahí (CRÍTICO)
+    requireInteraction: true, // No desaparece sola, el usuario debe tocarla
     actions: [
-        {action: 'confirm', title: '🔴 VER ALERTA'}
+        { action: 'open_url', title: '🔴 VER ALERTA' }
     ]
   };
 
@@ -48,9 +30,23 @@ self.addEventListener('push', function(event) {
   );
 });
 
+// Cuando el usuario toca la notificación
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
+
   event.waitUntil(
-    clients.openWindow('/dashboard')
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      // Si la app ya está abierta, ponle foco
+      for (let i = 0; i < clientList.length; i++) {
+        let client = clientList[i];
+        if (client.url.includes(event.notification.data.url) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Si no, abre una ventana nueva
+      if (clients.openWindow) {
+        return clients.openWindow(event.notification.data.url);
+      }
+    })
   );
 });
