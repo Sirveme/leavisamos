@@ -47,6 +47,7 @@ passlib[argon2]
 python-jose[cryptography]==3.5.0
 python-jose==3.5.0
 python-multipart==0.0.21
+pywebpush==2.2.0
 PyYAML==6.0.3
 rich==14.2.0
 rich-toolkit==0.17.1
@@ -68,3 +69,4 @@ uvicorn==0.40.0
 watchfiles==1.1.1
 webauthn==2.7.0
 websockets==15.0.1
+
