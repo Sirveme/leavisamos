@@ -44,6 +44,11 @@
             <span class="menu-title">Avisos</span>
         </div>
 
+        <div class="menu-item" onclick="activarNotificaciones()">
+            <i class="ph ph-bell-ringing menu-icon text-blue-400"></i>
+            <span class="menu-title">Activar Alertas</span>
+        </div>
+
         <!-- Botón Votación (Demo) -->
         <div class="menu-item">
             <i class="ph ph-hands-clapping menu-icon text-green-400"></i> <!-- Color distinto -->
@@ -102,39 +107,147 @@
             }
         };
 
+        // --- DATOS DEL USUARIO (Inyectados por Jinja2 desde el Backend) ---
+        const currentUserName = "{{ user.name }}"; 
+        const currentUserUnit = "{{ user.unit_info }}";
+
         // 2. Al presionar el botón de pánico
         const btnPanico = document.getElementById('btn-panico');
         
         // Evento para móvil (Touch) y PC (Click)
         // Usaremos lógica simple: Click = Disparo inmediato (luego haremos "mantener presionado")
         btnPanico.addEventListener('click', () => {
-            if (confirm("¿Estás seguro de activar la ALERTA VECINAL?")) {
-                socket.send(JSON.stringify({
-                    type: "PANIC_BUTTON"
-                }));
+            // 1. Validar confirmación
+            if (!confirm("¿ACTIVAR ALERTA VECINAL?")) return;
+
+            // 2. Intentar obtener GPS antes de enviar
+            if ("geolocation" in navigator) {
+                btnPanico.classList.add('opacity-50'); // Feedback visual
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // ÉXITO: Tenemos coordenadas
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        enviarAlerta(lat, lon, "GPS Activo");
+                    },
+                    (error) => {
+                        // ERROR: El usuario negó permiso o falló el GPS
+                        console.warn("No se pudo obtener GPS", error);
+                        enviarAlerta(null, null, "GPS No disponible (Edificio)");
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 } // 5 seg máx para buscar satélites
+                );
+            } else {
+                enviarAlerta(null, null, "Dispositivo sin GPS");
             }
         });
 
+        function enviarAlerta(lat, lon, estadoGPS) {
+            // Reproducir sonido "muco" para desbloquear audio
+            sirena.play().then(() => sirena.pause()).catch(e=>{});
+
+            socket.send(JSON.stringify({
+                type: "PANIC_BUTTON",
+                user: `${currentUserName} (${currentUserUnit})`,
+                location: estadoGPS,
+                coords: { lat: lat, lon: lon }
+            }));
+            
+            btnPanico.classList.remove('opacity-50');
+        }
+
         // Funciones visuales
+        // --- ACTUALIZAR VISUALIZADOR ---
         function mostrarAlerta(data) {
             const overlay = document.getElementById('alerta-overlay');
             const msg = document.getElementById('alerta-msg');
             
-            msg.innerText = `${data.user}: ${data.msg}`;
+            // Mensaje enriquecido
+            msg.innerHTML = `
+                <strong class="text-2xl block mb-2">${data.user}</strong>
+                <span class="text-sm bg-white/20 px-2 py-1 rounded">${data.msg}</span>
+                ${data.coords && data.coords.lat ? 
+                `<a href="https://maps.google.com/?q=${data.coords.lat},${data.coords.lon}" target="_blank" class="block mt-4 underline text-white font-bold">Ver en Mapa 📍</a>` 
+                : ''}
+            `;
+            
             overlay.classList.remove('hidden');
             
-            // Vibrar el celular (API nativa)
             if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
-            
-            // 2. SONAR (Intentar reproducir)
             sirena.currentTime = 0;
-            sirena.play().catch(e => console.log("El navegador bloqueó el sonido automático:", e)); 
+            sirena.play().catch(e => console.log("Bloqueo navegador"));
         }
 
         function cerrarAlerta() {
             document.getElementById('alerta-overlay').classList.add('hidden');
             sirena.pause(); // Detener sonido
             sirena.currentTime = 0; // Resetear
+        }
+
+
+        // --- PUSH NOTIFICATIONS ---
+        const VAPID_PUBLIC_KEY = "{{ vapid_public_key }}";
+
+        // Función para convertir la llave a formato Uint8Array (Requerido por el navegador)
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        async function activarNotificaciones() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                console.log("Push no soportado en este navegador");
+                return;
+            }
+
+            // 1. Pedir permiso
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                alert("Necesitas activar las notificaciones para recibir alertas de seguridad.");
+                return;
+            }
+
+            // 2. Obtener la suscripción del Service Worker
+            const registration = await navigator.serviceWorker.ready;
+            
+            let subscription = await registration.pushManager.getSubscription();
+            
+            // Si no existe, crearla
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+            }
+
+            // 3. Enviar la suscripción a nuestro Backend
+            await fetch('/api/push/subscribe', {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log("✅ Suscripción Push enviada al servidor");
+            alert("¡Alertas activadas correctamente!");
+        }
+
+        // --- BOTÓN PARA ACTIVAR (Puedes ponerlo en el menú o que salga automático) ---
+        // Por ahora, preguntamos al cargar si no está activo
+        if (Notification.permission === 'default') {
+            // Sugerencia: Mejor poner un botón visible que diga "Activar Alertas"
+            // activarNotificaciones(); 
         }
     </script>
 
