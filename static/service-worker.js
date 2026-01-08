@@ -27,3 +27,30 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+
+self.addEventListener('push', function(event) {
+  const data = event.data.json();
+  
+  const options = {
+    body: data.body,
+    icon: '/static/images/icon-192.png', // Asegúrate que exista
+    vibrate: [500, 200, 500, 200, 500],
+    data: { url: '/dashboard' }, // Para abrir al hacer clic
+    requireInteraction: true, // Se queda en pantalla hasta que el usuario toque
+    actions: [
+        {action: 'confirm', title: '🔴 VER ALERTA'}
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/dashboard')
+  );
+});
