@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-me-in h-full flex flex-col">
+    
+    <!-- CABECERA DE ESTADO -->
+    <div id="status-box" class="bg-slate-800 border border-slate-600 p-4 rounded-xl mb-4 text-center transition-colors duration-500">
+        <h1 class="text-xl font-bold text-slate-200"><i class="ph ph-siren mr-2"></i>MONITOR CENTINELA</h1>
+        <p id="status-text" class="text-xs text-slate-400">Sistema Armado y Escuchando...</p>
+        
+        <!-- Botón para silenciar (oculto por defecto) -->
+        <button id="btn-silenciar" onclick="silenciarAlarma()" class="hidden mt-3 bg-white text-red-600 px-6 py-2 rounded-full font-bold shadow-lg animate-bounce">
+            SILENCIAR Y ATENDER
+        </button>
+    </div>
+
+    <!-- BITÁCORA EN TIEMPO REAL -->
+    <div class="flex-1 bg-black rounded-xl p-4 overflow-hidden flex flex-col border border-slate-800 relative">
+        <div class="absolute top-2 right-2 text-[10px] text-slate-600">LIVE LOG v1.0</div>
+        
+        <!-- Aquí se inyectan los mensajes -->
+        <div id="security-log" class="overflow-y-auto h-full font-mono text-xs space-y-2 p-2">
+            <p class="text-slate-500 border-l-2 border-slate-700 pl-2">
+                <span class="text-slate-600">[{{ now }}]</span> Sistema iniciado. Esperando conexión...
+            </p>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    // --- SONIDO DE RADIO/ALARMA ---
+    // Usamos un sonido de "Police Radio" o similar
+    const radioSiren = new Audio('/static/audio/sirena.mp3'); // Usamos la misma por ahora, o sube otra
+    radioSiren.loop = true;
+
+    // --- WEBSOCKET ---
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
+    let socket;
+
+    function connect() {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            logSystem("Conexión segura establecida con el servidor.", "text-green-500");
+            document.getElementById('status-text').innerText = "Conectado. Monitoreando perímetro.";
+            document.getElementById('status-box').classList.remove('border-red-500');
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === "ALERTA_CRITICA") {
+                triggerAlarma(data);
+            } else if (data.type === "GPS_UPDATE") {
+                // Opcional: Actualizar mapa si lo tuviéramos
+                console.log("GPS Actualizado:", data.coords);
+            }
+        };
+
+        socket.onclose = () => {
+            logSystem("Conexión perdida. Reintentando...", "text-orange-500");
+            setTimeout(connect, 3000);
+        };
+    }
+
+    // --- LÓGICA DE ALARMA ---
+    function triggerAlarma(data) {
+        // 1. Visual
+        const box = document.getElementById('status-box');
+        box.classList.remove('bg-slate-800');
+        box.classList.add('bg-red-600', 'animate-pulse');
+        
+        document.getElementById('status-text').innerText = "¡¡ALERTA EN PROGRESO!!";
+        document.getElementById('status-text').classList.add('text-white', 'font-bold');
+        
+        document.getElementById('btn-silenciar').classList.remove('hidden');
+
+        // 2. Log
+        const time = new Date().toLocaleTimeString();
+        const msg = `⚠️ ALERTA: ${data.user} ha activado PÁNICO.`;
+        const location = data.msg.includes("Ubicación") ? data.msg : "";
+        
+        const html = `
+            <div class="bg-red-900/30 border-l-4 border-red-500 p-2 text-red-300">
+                <strong>[${time}] ${data.user}</strong><br>
+                ${location}
+                ${data.coords ? `<br><a href="https://maps.google.com/?q=${data.coords.lat},${data.coords.lon}" target="_blank" class="underline text-red-200">Ver Ubicación GPS</a>` : ''}
+            </div>
+        `;
+        appendToLog(html);
+
+        // 3. Audio
+        radioSiren.currentTime = 0;
+        radioSiren.play().catch(e => console.log("Click para activar audio"));
+        
+        // Vibrar si es tablet
+        if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+    }
+
+    function silenciarAlarma() {
+        radioSiren.pause();
+        radioSiren.currentTime = 0;
+        
+        // Restaurar visual
+        const box = document.getElementById('status-box');
+        box.classList.add('bg-slate-800');
+        box.classList.remove('bg-red-600', 'animate-pulse');
+        
+        document.getElementById('status-text').innerText = "Alerta atendida. Monitoreando...";
+        document.getElementById('btn-silenciar').classList.add('hidden');
+        
+        logSystem("Guardia atendió la alerta.", "text-blue-400");
+    }
+
+    // --- UTILIDADES ---
+    function logSystem(text, colorClass) {
+        const time = new Date().toLocaleTimeString();
+        const html = `<p class="border-l-2 border-slate-700 pl-2 ${colorClass}"><span class="text-slate-600">[${time}]</span> ${text}</p>`;
+        appendToLog(html);
+    }
+
+    function appendToLog(htmlString) {
+        const log = document.getElementById('security-log');
+        const div = document.createElement('div');
+        div.innerHTML = htmlString;
+        // Insertar al principio (arriba)
+        log.prepend(div);
+    }
+
+    // Iniciar
+    connect();
+</script>
+{% endblock %}
