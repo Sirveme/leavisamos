@@ -53,8 +53,8 @@
             if (data.type === "ALERTA_CRITICA") {
                 triggerAlarma(data);
             } else if (data.type === "GPS_UPDATE") {
-                // Opcional: Actualizar mapa si lo tuviéramos
-                console.log("GPS Actualizado:", data.coords);
+                // CORRECCIÓN: Ahora sí mostramos el link cuando llega el GPS
+                updateLogWithGPS(data);
             }
         };
 
@@ -96,6 +96,21 @@
         
         // Vibrar si es tablet
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+    }
+
+    // NUEVA FUNCIÓN PARA ACTUALIZAR GPS
+    function updateLogWithGPS(data) {
+        const time = new Date().toLocaleTimeString();
+        // Creamos una entrada en el log confirmando la ubicación precisa
+        const html = `
+            <div class="bg-blue-900/30 border-l-4 border-blue-500 p-2 text-blue-300 ml-4">
+                <strong>[${time}] 📡 GPS PRECISIÓN RECIBIDA</strong><br>
+                <a href="https://maps.google.com/?q=${data.coords.lat},${data.coords.lon}" target="_blank" class="underline text-white font-bold cursor-pointer">
+                    📍 VER UBICACIÓN EXACTA EN MAPA
+                </a>
+            </div>
+        `;
+        appendToLog(html);
     }
 
     function silenciarAlarma() {
