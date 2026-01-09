@@ -2,9 +2,11 @@
 from fastapi import APIRouter, Depends, Body, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Device, Member
+from app.models import Device, Member, AccessLog, MemberRole
 from app.routers.dashboard import get_current_member
 from sqlalchemy import func
+
+from app.routers.ws import manager # Para avisar al websocket
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -57,3 +59,33 @@ async def subscribe_push(
         
     db.commit()
     return {"status": "success", "msg": msg}
+
+
+@router.post("/proximity/check-in")
+async def check_in_proximity(
+    request: Request,
+    member: Member = Depends(get_current_member),
+    db: Session = Depends(get_db)
+):
+    # Crear Log de Acceso
+    new_log = AccessLog(
+        organization_id=member.organization_id,
+        member_id=member.id,
+        direction="IN",
+        method="APP_CHECKIN", # Marcamos que fue voluntario desde la App
+        target_unit=member.unit_info,
+        visitor_name="Residente (Confirmado)"
+    )
+    db.add(new_log)
+    db.commit()
+
+    # Avisar al Guardia (Monitor Centinela) vía WebSocket
+    # Usamos un tipo nuevo "INFO_ACCESS" para que sea verde, no rojo
+    await manager.broadcast({
+        "type": "INFO_ACCESS", 
+        "user": member.name,
+        "msg": f"📍 {member.name} ha marcado su ingreso (Check-in).",
+        "unit": member.unit_info
+    })
+    
+    return {"status": "ok", "msg": "Ingreso registrado correctamente"}
