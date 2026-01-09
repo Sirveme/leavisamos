@@ -64,6 +64,27 @@
 
 </div>
 
+<!-- BOTONES DE ACCIÓN FLOTANTES (Nuevos) -->
+    <div class="fixed bottom-28 right-6 flex flex-col gap-4 z-40">
+        
+        <!-- BOTÓN VERDE: YA LLEGUÉ (Check-in) -->
+        <!-- Solo visible si el usuario está cerca (o siempre visible para demo) -->
+        <button id="btn-checkin" 
+                class="w-12 h-12 bg-green-600 rounded-full shadow-lg shadow-green-600/50 flex items-center justify-center text-white border-2 border-green-400 active:scale-90 transition-transform"
+                title="Marcar Ingreso Seguro">
+            <i class="ph ph-map-pin-check text-xl"></i>
+        </button>
+
+        <!-- BOTÓN AMARILLO: VOY LLEGANDO -->
+        <button id="btn-llegando" 
+                class="w-12 h-12 bg-yellow-500 rounded-full shadow-lg shadow-yellow-500/50 flex items-center justify-center text-white border-2 border-yellow-300 active:scale-90 transition-transform"
+                title="Avisar Llegada">
+            <i class="ph ph-person-simple-walk text-xl"></i>
+        </button>
+        
+    </div>
+
+
 <!-- BOTÓN DE PÁNICO FLOTANTE -->
     <div class="fixed bottom-6 right-6 z-40">
         <button id="btn-panico" 
@@ -83,170 +104,19 @@
         </button>
     </div>
 
-    <!-- SCRIPT WEBSOCKET -->
     <script>
-        // --- SONIDO ---
-        // Asegúrate de que este archivo exista en Railway
-        const sirena = new Audio('/static/sounds/siren.mp3'); 
-        sirena.loop = true; 
-
-        // --- DATOS USUARIO ---
-        const VAPID_PUBLIC_KEY = "{{ vapid_public_key }}";
-        const currentUserName = "{{ user.name }}"; 
-        const currentUserUnit = "{{ user.unit_info }}";
-
-        // --- WEBSOCKET ---
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws/alerta`;
-        
-        let socket;
-        let isAlertActive = false; // Para evitar reconexiones ruidosas
-
-        function connectWebSocket() {
-            socket = new WebSocket(wsUrl);
-
-            socket.onopen = () => console.log("🟢 WS Conectado");
-            
-            socket.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if (data.type === "ALERTA_CRITICA") {
-                    mostrarAlerta(data);
-                }
-            };
-
-            socket.onclose = () => {
-                console.log("🔴 WS Desconectado. Reintentando en 3s...");
-                setTimeout(connectWebSocket, 3000); // Reconexión automática
-            };
-        }
-        
-        // Iniciar conexión
-        connectWebSocket();
-
-        // --- BOTÓN DE PÁNICO ---
-        const btnPanico = document.getElementById('btn-panico');
-        
-        btnPanico.addEventListener('click', () => {
-            // Desbloquear audio (truco para móviles)
-            sirena.play().then(() => sirena.pause()).catch(e=>{});
-
-            if (confirm("¿ACTIVAR ALERTA VECINAL?")) {
-                // Disparo inmediato
-                socket.send(JSON.stringify({
-                    type: "PANIC_BUTTON",
-                    user: `${currentUserName} (${currentUserUnit})`,
-                    location: "Ubicación pendiente...",
-                    coords: null
-                }));
-
-                // GPS en segundo plano
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            if(socket.readyState === WebSocket.OPEN){
-                                socket.send(JSON.stringify({
-                                    type: "GPS_UPDATE",
-                                    coords: { 
-                                        lat: position.coords.latitude, 
-                                        lon: position.coords.longitude 
-                                    }
-                                }));
-                            }
-                        },
-                        (err) => console.log("GPS Error", err),
-                        { enableHighAccuracy: true, timeout: 10000 }
-                    );
-                }
-            }
-        });
-
-        // --- PUSH NOTIFICATIONS & HUELLA DIGITAL ---
-        function urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        }
-
-        async function activarNotificaciones() {
-            if (!('serviceWorker' in navigator)) return;
-
-            // 1. Pedir permiso
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') return;
-
-            const registration = await navigator.serviceWorker.ready;
-            let subscription = await registration.pushManager.getSubscription();
-            
-            if (!subscription) {
-                subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-                });
-            }
-
-            // 2. RECOLECTAR HUELLA DIGITAL (Aquí estaba el problema)
-            // Obtenemos Timezone y Platform
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const platform = navigator.platform || 'Desconocido';
-            // Detectar si es PWA
-            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-            // 3. ENVIAR AL BACKEND
-            console.log("Enviando detalles:", { timezone, platform, isPWA }); // Debug
-            
-            await fetch('/api/push/subscribe', {
-                method: 'POST',
-                body: JSON.stringify({
-                    subscription: subscription,
-                    details: {
-                        timezone: timezone,
-                        platform: platform,
-                        is_pwa: isPWA
-                    }
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            alert("Notificaciones activadas y dispositivo registrado.");
-        }
-
-        // --- FUNCIONES VISUALES ---
-        function mostrarAlerta(data) {
-            if (isAlertActive) return; // Evitar disparar doble si ya está sonando
-            isAlertActive = true;
-
-            const overlay = document.getElementById('alerta-overlay');
-            const msg = document.getElementById('alerta-msg');
-            
-            msg.innerHTML = `
-                <strong class="text-2xl block mb-2">${data.user}</strong>
-                <span class="text-sm bg-white/20 px-2 py-1 rounded">${data.msg}</span>
-            `;
-            
-            overlay.classList.remove('hidden');
-            
-            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
-            
-            sirena.currentTime = 0;
-            sirena.play().catch(e => console.log("Audio bloqueado:", e));
-        }
-
-        function cerrarAlerta() {
-            // APAGADO VIOLENTO DEL SONIDO
-            sirena.pause();
-            sirena.currentTime = 0;
-            isAlertActive = false;
-            
-            document.getElementById('alerta-overlay').classList.add('hidden');
-        }
+        window.APP_CONFIG = {
+            user: {
+                id: "{{ user.id }}",
+                name: "{{ user.name }}",
+                unit: "{{ user.unit_info }}"
+            },
+            vapidPublicKey: "{{ vapid_public_key }}",
+            wsUrl: (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/alerta'
+        };
     </script>
 
-
+    <!-- Cargar Script Externo -->
+    <script src="/static/js/pages/dashboard.js"></script>
 
 {% endblock %}
