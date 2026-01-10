@@ -234,3 +234,77 @@ class Message(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     conversation = relationship("Conversation", back_populates="messages")
+
+# --- MÓDULO COMUNICACIÓN (Megáfono) ---
+
+class Bulletin(Base):
+    __tablename__ = "bulletins"
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    author_id = Column(Integer, ForeignKey("members.id")) # Quién lo escribió (Admin/Profesor)
+    
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False) # Puede ser HTML simple o Texto
+    image_url = Column(String, nullable=True) # Foto del comunicado/afiche
+    file_url = Column(String, nullable=True) # PDF adjunto (Reglamento)
+    
+    # Segmentación Universal
+    # Ej: {"torre": "A"} o {"grado": "5", "seccion": "B"} o {"all": true}
+    target_criteria = Column(JSON, default={}) 
+    
+    # Configuración de Comportamiento
+    priority = Column(String, default="info") # info, warning, alert (rojo)
+    interaction_type = Column(String, default="read_only") # read_only, confirm (firma), link
+    action_payload = Column(String, nullable=True) # URL del link si interaction_type es 'link'
+    
+    expires_at = Column(DateTime(timezone=True), nullable=True) # Cuándo desaparece del muro
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relaciones
+    organization = relationship("Organization")
+    events = relationship("BulletinEvent", back_populates="bulletin")
+
+class BulletinEvent(Base):
+    __tablename__ = "bulletin_events"
+    id = Column(Integer, primary_key=True)
+    bulletin_id = Column(Integer, ForeignKey("bulletins.id"))
+    member_id = Column(Integer, ForeignKey("members.id"))
+    
+    status = Column(String) # 'sent', 'read', 'confirmed'
+    interacted_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    bulletin = relationship("Bulletin", back_populates="events")
+    member = relationship("Member")
+
+
+# --- MÓDULO VIDA SOCIAL ---
+
+# En app/models.py
+
+class Pet(Base):
+    __tablename__ = "pets"
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    owner_id = Column(Integer, ForeignKey("members.id"))
+    
+    name = Column(String)
+    species = Column(String)
+    breed = Column(String, nullable=True)
+    
+    # CAMBIO IMPORTANTE: Usamos 'photos' (JSON) en lugar de 'photo_url'
+    # Para guardar varias fotos en el futuro
+    photos = Column(JSON, default=[]) 
+    
+    # Detalles
+    habits = Column(Text, nullable=True)
+    health_issues = Column(String, nullable=True)
+    notes = Column(Text, nullable=True) # <--- AQUÍ ESTABA EL ERROR (Faltaba esto)
+    
+    # Estado Perdido
+    is_lost = Column(Boolean, default=False)
+    lost_date = Column(DateTime(timezone=True), nullable=True)
+    last_seen_location = Column(String, nullable=True)
+    reward_amount = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
+    
+    owner = relationship("Member")
