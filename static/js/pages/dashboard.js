@@ -1,17 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. CONFIGURACIÓN INICIAL ---
     const config = window.APP_CONFIG;
-    const sirena = new Audio('/static/sounds/siren.mp3');
+    const sirena = new Audio('/static/sounds/sirena.mp3');
     sirena.loop = true;
 
     let socket;
     let isAlertActive = false;
 
-    // --- 2. WEBSOCKET ---
+    // --- 2. WEBSOCKET CON INDICADOR DE ESTADO ---
+    function updateConnectionUI(status) {
+        const el = document.getElementById('connection-status');
+        if (!el) return;
+
+        if (status === 'connected') {
+            el.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Online';
+            el.classList.remove('text-red-400', 'bg-red-900/30');
+            el.classList.add('text-green-400', 'bg-green-900/30');
+        } else if (status === 'disconnected') {
+            el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> Offline';
+            el.classList.remove('text-green-400', 'bg-green-900/30');
+            el.classList.add('text-red-400', 'bg-red-900/30');
+        } else {
+            el.innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500 animate-ping"></span> ...';
+        }
+    }
+
     function connectWebSocket() {
+        if (socket && socket.readyState === WebSocket.OPEN) return;
+
+        updateConnectionUI('connecting');
         socket = new WebSocket(config.wsUrl);
 
-        socket.onopen = () => console.log("🟢 WS Conectado");
+        socket.onopen = () => {
+            console.log("🟢 WS Conectado");
+            updateConnectionUI('connected');
+        };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -22,44 +45,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.onclose = () => {
             console.log("🔴 WS Desconectado. Reintentando...");
+            updateConnectionUI('disconnected');
+            // Reintentar en 3 segundos
             setTimeout(connectWebSocket, 3000);
         };
+        
+        socket.onerror = (err) => {
+            console.error("WS Error", err);
+            socket.close();
+        };
     }
+    
+    // Iniciar
     connectWebSocket();
 
-    // --- 3. BOTÓN ROJO (Pánico) ---
+     // --- 3. BOTÓN ROJO (Pánico) ---
     const btnPanico = document.getElementById('btn-panico');
     if (btnPanico) {
+        // Usamos mousedown/touchstart para reacción rápida
         btnPanico.addEventListener('click', () => {
-            sirena.play().then(() => sirena.pause()).catch(e => {}); // Desbloqueo audio
+            
+            // Lógica de "Doble Confirmación" visual en lugar de alert() nativo
+            // Para este MVP, dispararemos directo pero con sonido inmediato
+            
+            // 1. Iniciar Sonido Local Inmediatamente (Feedback al usuario)
+            sirena.currentTime = 0;
+            sirena.play().catch(e => console.log("Audio:", e));
 
-            if (confirm("¿ACTIVAR ALERTA VECINAL?")) {
-                // Disparo inmediato
-                socket.send(JSON.stringify({
-                    type: "PANIC_BUTTON",
-                    user: `${config.user.name} (${config.user.unit})`,
-                    location: "Ubicación pendiente...",
-                    coords: null
-                }));
+            // 2. Enviar WebSocket
+            socket.send(JSON.stringify({
+                type: "PANIC_BUTTON",
+                user: `${config.user.name} (${config.user.unit})`,
+                location: "Ubicación pendiente...",
+                coords: null,
+                user_id: config.user.id
+            }));
 
-                // GPS segundo plano
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            if (socket.readyState === WebSocket.OPEN) {
-                                socket.send(JSON.stringify({
-                                    type: "GPS_UPDATE",
-                                    coords: {
-                                        lat: position.coords.latitude,
-                                        lon: position.coords.longitude
-                                    }
-                                }));
-                            }
-                        },
-                        (err) => console.log("GPS Error", err),
-                        { enableHighAccuracy: true, timeout: 10000 }
-                    );
-                }
+            // 3. Vibrar
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+
+            // 4. GPS en segundo plano (No bloquea el envío)
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        if (socket.readyState === WebSocket.OPEN) {
+                            socket.send(JSON.stringify({
+                                type: "GPS_UPDATE",
+                                coords: {
+                                    lat: position.coords.latitude,
+                                    lon: position.coords.longitude
+                                }
+                            }));
+                        }
+                    },
+                    (err) => console.log("GPS Error", err),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
             }
         });
     }
@@ -102,7 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 6. FUNCIONES VISUALES ---
+    // --- FUNCIONES VISUALES ---
     function mostrarAlerta(data) {
+        // Evitar reactivación si ya está activa
         if (isAlertActive) return;
         isAlertActive = true;
 
@@ -110,25 +153,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = document.getElementById('alerta-msg');
 
         if (overlay && msg) {
+            // Llenar datos
             msg.innerHTML = `
-                <strong class="text-2xl block mb-2">${data.user}</strong>
-                <span class="text-sm bg-white/20 px-2 py-1 rounded">${data.msg}</span>
+                <strong style="display:block; margin-bottom: 10px; font-size: 1.5rem;">${data.user}</strong>
+                <span>${data.msg}</span>
             `;
-            overlay.classList.remove('hidden');
+            
+            // FORZAR VISIBILIDAD (La clave del éxito)
+            overlay.style.display = 'flex'; 
         }
-
-        if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
-
+        
+        // Sonido y Vibración
+        if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000]);
         sirena.currentTime = 0;
-        sirena.play().catch(e => console.log("Audio bloqueado:", e));
+        sirena.play().catch(e => console.log("Audio:", e));
     }
 
-    // Esta función debe ser accesible globalmente para el botón "ENTENDIDO" del HTML
+    // HACER GLOBAL para que el botón HTML la encuentre
     window.cerrarAlerta = function() {
+        console.log("Cerrando alerta...");
         sirena.pause();
         sirena.currentTime = 0;
         isAlertActive = false;
-        document.getElementById('alerta-overlay').classList.add('hidden');
+        
+        const overlay = document.getElementById('alerta-overlay');
+        if(overlay) {
+            overlay.style.display = 'none'; // Ocultar a la fuerza
+        }
     };
 
     // --- 7. PUSH NOTIFICATIONS ---
