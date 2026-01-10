@@ -78,5 +78,50 @@
         
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js');
     </script>
+
+    <script>
+        function renderLocalTimes(rootElement) {
+            rootElement.querySelectorAll('.local-time').forEach(el => {
+                if(el.dataset.processed) return;
+                
+                const utcDate = el.getAttribute('data-date');
+                
+                // VALIDACIÓN: Si no hay fecha o es "None", ocultar o poner texto default
+                if(!utcDate || utcDate === 'None' || utcDate === '') {
+                    el.innerText = ""; 
+                    return;
+                }
+
+                try {
+                    // Truco: Agregar 'Z' si falta para asegurar UTC
+                    const dateString = utcDate.endsWith('Z') || utcDate.includes('+') ? utcDate : utcDate + 'Z';
+                    const dateObj = new Date(dateString);
+
+                    // Verificar si es válida
+                    if (isNaN(dateObj.getTime())) {
+                        throw new Error("Fecha inválida");
+                    }
+
+                    const localString = dateObj.toLocaleString('es-PE', {
+                        day: 'numeric', month: 'short', 
+                        hour: 'numeric', minute: '2-digit', hour12: true
+                    });
+                    
+                    el.innerText = localString;
+                    el.classList.remove('opacity-0');
+                    el.dataset.processed = "true";
+                } catch (e) {
+                    console.warn("Error parseando fecha:", utcDate);
+                    el.innerText = "Fecha desconocida"; // Fallback elegante
+                    el.classList.remove('opacity-0');
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => renderLocalTimes(document));
+        document.body.addEventListener('htmx:afterSwap', (evt) => renderLocalTimes(evt.detail.elt));
+    </script>
+
+    <script src="/static/js/modules/neural_core.js"></script>
 </body>
 </html>

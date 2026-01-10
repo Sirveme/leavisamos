@@ -1,0 +1,62 @@
+<!-- DISEÑO TIPO FICHA -->
+<div class="relative bg-white text-slate-800 rounded-xl overflow-hidden shadow-xl transform transition hover:-translate-y-1 hover:shadow-2xl border-4 {{ 'border-red-600' if pet.is_lost else 'border-slate-200' }}">
+    
+    <!-- CINTA DE ESTADO -->
+    {% if pet.is_lost %}
+    <div class="bg-red-600 text-white text-center font-bold py-2 uppercase tracking-widest animate-pulse">
+        🚨 SE BUSCA 🚨
+    </div>
+    {% else %}
+    <div class="bg-indigo-100 text-indigo-800 text-xs font-bold text-center py-1 uppercase">
+        Vecino Peludo
+    </div>
+    {% endif %}
+
+    <!-- FOTO PRINCIPAL -->
+    <div class="h-48 overflow-hidden relative">
+        <!-- Si photos es una lista, tomamos la primera, sino un placeholder -->
+        <img src="{{ pet.photos[0] if pet.photos else 'https://placehold.co/400x300?text=Sin+Foto' }}" 
+             class="w-full h-full object-cover">
+        
+        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-3">
+            <h3 class="text-2xl font-bold text-white leading-none">{{ pet.name }}</h3>
+            <p class="text-white/80 text-sm">{{ pet.breed or pet.species }}</p>
+        </div>
+    </div>
+
+    <!-- DETALLES -->
+    <div class="p-4 text-sm">
+        
+        {% if pet.is_lost %}
+            <!-- MODO PÁNICO -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3 text-red-800">
+                <p><strong>📍 Visto en:</strong> {{ pet.last_seen_location or 'Desconocido' }}</p>
+                <p><strong>🕒 Hora:</strong> <span class="local-time" data-date="{{ pet.lost_date }}"></span></p>
+                {% if pet.reward_amount %}
+                <p class="mt-2 text-lg font-bold bg-yellow-300 inline-block px-2 transform -rotate-2 shadow-sm">
+                    💰 {{ pet.reward_amount }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <a href="tel:{{ pet.contact_phone }}" class="block w-full bg-red-600 text-white text-center font-bold py-2 rounded-lg mb-2 hover:bg-red-700">
+                📞 LLAMAR AHORA
+            </a>
+        {% else %}
+            <!-- MODO NORMAL -->
+            <p class="italic text-slate-500 mb-2">"{{ pet.habits or 'Sin descripción aún.' }}"</p>
+            <div class="flex flex-wrap gap-2 mb-3">
+                <span class="bg-slate-100 px-2 py-1 rounded text-xs">🏠 {{ pet.owner.unit_info }}</span>
+                {% if pet.health_issues %}
+                <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs">⚠️ {{ pet.health_issues }}</span>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- BOTONES DUEÑO -->
+        <!-- (Aquí lógica para que solo el dueño vea el botón de Editar/Reportar) -->
+        <button onclick="toggleLostMode('{{ pet.id }}')" class="text-xs text-slate-400 underline w-full text-center mt-2">
+            Gestionar Estado
+        </button>
+    </div>
+</div>
