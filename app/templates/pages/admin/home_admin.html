@@ -1,23 +1,118 @@
 {% extends "base.html" %}
 
-<!-- Ancho completo para tablas y reportes -->
+<!-- Ancho completo -->
 {% block container_width %}max-w-full lg:max-w-[95%]{% endblock %}
 
 {% block content %}
-<div class="fade-me-in">
-    <h1 class="text-2xl font-bold text-white mb-4">Panel Administrativo</h1>
-    <p class="text-slate-400 mb-6">Bienvenida, {{ user.name }}</p>
+<div class="fade-me-in grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-2rem)]">
+    
+    <!-- COLUMNA IZQUIERDA: CREAR MENSAJE -->
+    <div class="lg:col-span-1 bg-slate-900 rounded-xl p-6 border border-slate-800 flex flex-col">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <i class="ph ph-megaphone text-indigo-400"></i> Nuevo Comunicado
+        </h2>
+        
+        <form hx-post="/admin/bulletin/create" 
+                hx-target="#bulletin-list" 
+                hx-swap="afterbegin"
+                id="form-boletin">
+            
+            <!-- Título -->
+            <div class="mb-4">
+                <label class="block text-xs text-slate-400 mb-1 uppercase">Título / Asunto</label>
+                <input type="text" name="title" required placeholder="Ej: Corte de Agua"
+                       class="w-full bg-black border border-slate-700 text-white rounded-lg p-3 focus:border-indigo-500 outline-none">
+            </div>
 
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-            <span class="text-xs text-slate-500 uppercase">Morosidad</span>
-            <p class="text-2xl font-bold text-red-400">{{ stats.morosidad }}</p>
+            <!-- Prioridad -->
+            <div class="mb-4">
+                <label class="block text-xs text-slate-400 mb-1 uppercase">Prioridad</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="info" class="peer hidden" checked>
+                        <div class="text-center py-2 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white text-sm border border-slate-700 transition-all">
+                            ℹ️ Info
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="warning" class="peer hidden">
+                        <div class="text-center py-2 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-yellow-600 peer-checked:text-white text-sm border border-slate-700 transition-all">
+                            ⚠️ Aviso
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="alert" class="peer hidden">
+                        <div class="text-center py-2 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-red-600 peer-checked:text-white text-sm border border-slate-700 transition-all">
+                            🚨 Urgente
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="mb-6">
+                <label class="block text-xs text-slate-400 mb-1 uppercase">Mensaje</label>
+                <textarea name="content" required rows="6" placeholder="Escriba los detalles aquí..."
+                          class="w-full bg-black border border-slate-700 text-white rounded-lg p-3 focus:border-indigo-500 outline-none resize-none"></textarea>
+            </div>
+
+            <!-- Botón Enviar -->
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2">
+                <i class="ph ph-paper-plane-right"></i> ENVIAR A TODOS
+            </button>
+            <p class="text-[10px] text-slate-500 text-center mt-2">
+                Se enviará una notificación Push a {{ stats.vecinos }} usuarios.
+            </p>
+        </form>
+    </div>
+
+    <!-- COLUMNA DERECHA: HISTORIAL -->
+    <div class="lg:col-span-2 bg-slate-900 rounded-xl p-6 border border-slate-800 flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-white">Historial de Enviados</h2>
+            <div class="flex gap-4 text-sm text-slate-400">
+                <span>👥 {{ stats.vecinos }} Vecinos</span>
+            </div>
         </div>
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-            <span class="text-xs text-slate-500 uppercase">Caja Chica</span>
-            <p class="text-2xl font-bold text-green-400">{{ stats.ingresos }}</p>
+
+        <div id="bulletin-list" class="flex-1 overflow-y-auto pr-2 space-y-3">
+            <!-- Loop de Historial (Jinja2) -->
+            {% for b in bulletins %}
+            <div class="p-4 bg-slate-800 rounded-lg border-l-4 
+                {% if b.priority == 'alert' %}border-red-500{% elif b.priority == 'warning' %}border-yellow-500{% else %}border-blue-500{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-lg">{{ b.title }}</h3>
+                        <span class="text-xs text-slate-500 local-time opacity-0 transition-opacity" 
+                            data-date="{{ b.created_at.isoformat() }}">
+                            {{ b.created_at.strftime('%d/%m/%Y %H:%M') }} <!-- Fallback visual -->
+                        </span>
+                    </div>
+                    {% if b.priority == 'alert' %}
+                        <span class="bg-red-900/50 text-red-300 text-xs px-2 py-1 rounded">Urgente</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-slate-300 mt-2 whitespace-pre-wrap">{{ b.content }}</p>
+            </div>
+            {% else %}
+            <div class="text-center text-slate-600 py-10">
+                <i class="ph ph-envelope-open text-4xl mb-2"></i>
+                <p>No hay comunicados recientes.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
-    <!-- Aquí pondremos botones de Gestión luego -->
+
 </div>
+
+<script>
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if(evt.detail.elt.id === 'form-boletin' && evt.detail.successful) {
+            evt.detail.elt.reset(); // Limpiar formulario
+            // Feedback de voz opcional
+            // hablar("Mensaje enviado correctamente");
+        }
+    });
+</script>
+
 {% endblock %}
