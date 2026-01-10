@@ -84,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerVisual(data, colorClass, titlePrefix, soundObj, isLoop) {
         const box = document.getElementById('status-box');
         const statusText = document.getElementById('status-text');
+
+        // Obtener hora actual
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
         // A. CAMBIO DE COLOR FORZADO (Inline Style para evitar fallos de Tailwind)
         if (colorClass.includes('red')) {
@@ -120,9 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (colorClass.includes('yellow')) { logBg = 'rgba(202, 138, 4, 0.3)'; logBorder = '#eab308'; }
 
         const html = `
-            <div ${divId} style="background: ${logBg}; border-left: 4px solid ${logBorder};" class="p-2 text-white mb-2 fade-me-in cursor-pointer" title="Clic para detalles">
-                <strong>${titlePrefix}: ${data.user} (${data.unit || ''})</strong><br>
-                <span class="text-xs opacity-90">${data.msg || ''}</span>
+            <div ${divId} style="background: ${logBg}; border-left: 4px solid ${logBorder}; padding: 8px; margin-bottom: 8px; color: white; display: flex; justify-content: space-between; align-items: center;" class="fade-me-in cursor-pointer">
+                <div>
+                    <strong>${titlePrefix}: ${data.user} (${data.unit || ''})</strong><br>
+                    <span style="font-size: 0.75rem; opacity: 0.9;">${data.msg || ''}</span>
+                </div>
+                <div style="font-family: monospace; font-size: 1rem; font-weight: bold; opacity: 0.8;">
+                    ${time}
+                </div>
             </div>
         `;
         appendToLog(html);
@@ -155,12 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
             existingLog.style.borderLeftColor = '#22c55e';
             
             existingLog.innerHTML = `
-                <div class="flex justify-between items-center">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong class="text-green-400">✔ YA LLEGÓ: ${data.user}</strong>
-                        <div class="text-xs text-slate-300 mt-1">Confirmado por: <strong>${data.method || 'Sistema'}</strong></div>
+                        <strong style="color:#4ade80;">✔ YA LLEGÓ: ${data.user}</strong>
+                        <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">
+                            Confirmado por: <strong>${data.method || 'Sistema'}</strong>
+                        </div>
                     </div>
-                    <span class="text-xs text-green-500 font-mono">${time}</span>
+                    <span style="font-size:1.2rem; color:#4ade80; font-family:monospace; font-weight:bold;">${time}</span>
                 </div>
             `;
             // Sonido suave

@@ -145,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. FUNCIONES VISUALES ---
     // --- FUNCIONES VISUALES ---
     function mostrarAlerta(data) {
-        // Evitar reactivación si ya está activa
         if (isAlertActive) return;
         isAlertActive = true;
 
@@ -153,33 +152,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = document.getElementById('alerta-msg');
 
         if (overlay && msg) {
-            // Llenar datos
             msg.innerHTML = `
-                <strong style="display:block; margin-bottom: 10px; font-size: 1.5rem;">${data.user}</strong>
+                <strong style="display:block; margin-bottom:5px;">${data.user}</strong>
                 <span>${data.msg}</span>
             `;
             
-            // FORZAR VISIBILIDAD (La clave del éxito)
+            // FUERZA BRUTA PARA MOSTRAR
             overlay.style.display = 'flex'; 
         }
         
-        // Sonido y Vibración
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000]);
         sirena.currentTime = 0;
         sirena.play().catch(e => console.log("Audio:", e));
     }
 
-    // HACER GLOBAL para que el botón HTML la encuentre
+    // Función GLOBAL para cerrar
     window.cerrarAlerta = function() {
-        console.log("Cerrando alerta...");
         sirena.pause();
         sirena.currentTime = 0;
         isAlertActive = false;
         
         const overlay = document.getElementById('alerta-overlay');
-        if(overlay) {
-            overlay.style.display = 'none'; // Ocultar a la fuerza
-        }
+        if (overlay) overlay.style.display = 'none';
     };
 
     // --- 7. PUSH NOTIFICATIONS ---
