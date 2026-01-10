@@ -112,6 +112,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                 await manager.broadcast({
                     "type": "PRE_ARRIVAL",
                     "user": usuario,
+                    "user_id": data.get("user_id"), # <--- ASEGURAR ESTO
                     "unit": unidad,
                     "msg": "Llegando en aprox. 5 min"
                 })

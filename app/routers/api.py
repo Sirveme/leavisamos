@@ -84,8 +84,10 @@ async def check_in_proximity(
     await manager.broadcast({
         "type": "INFO_ACCESS", 
         "user": member.name,
-        "msg": f"📍 {member.name} ha marcado su ingreso (Check-in).",
-        "unit": member.unit_info
+        "user_id": member.id,  # <--- AGREGAR ESTO
+        "msg": f"📍 {member.name} ha marcado su ingreso.",
+        "unit": member.unit_info,
+        "method": "WiFi/App" # Para saber cómo confirmó
     })
     
     return {"status": "ok", "msg": "Ingreso registrado correctamente"}
