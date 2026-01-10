@@ -45,9 +45,10 @@
 <body class="flex justify-center h-screen overflow-hidden bg-black">
 
     <!-- Contenedor Principal (Mobile First) -->
-    <main class="w-full max-w-md h-full bg-[#0f172a] shadow-2xl relative flex flex-col border-x border-slate-800">
+    <!-- Usamos un Bloque Jinja para la clase, con valor por defecto 'max-w-md' -->
+    <main class="w-full {% block container_width %}max-w-md{% endblock %} h-full bg-[#0f172a] shadow-2xl relative flex flex-col border-x border-slate-800 mx-auto">
         
-        <!-- Barra de Progreso (Ahora vive DENTRO del main) -->
+        <!-- Barra de Progreso -->
         <div class="htmx-progress-container">
             <div id="progress-bar" class="htmx-progress-bar"></div>
         </div>
