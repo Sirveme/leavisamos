@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. FUNCIONES VISUALES ---
     // --- FUNCIONES VISUALES ---
     function mostrarAlerta(data) {
+        // Evitar que la alerta se dispare múltiples veces si ya está activa
         if (isAlertActive) return;
         isAlertActive = true;
 
@@ -152,28 +153,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = document.getElementById('alerta-msg');
 
         if (overlay && msg) {
+            // Llenar el mensaje dinámico
             msg.innerHTML = `
-                <strong style="display:block; margin-bottom:5px;">${data.user}</strong>
+                <strong style="display:block; margin-bottom:5px; font-size:1.5rem;">${data.user}</strong>
                 <span>${data.msg}</span>
             `;
             
-            // FUERZA BRUTA PARA MOSTRAR
+            // Forzar que la pantalla roja se muestre
             overlay.style.display = 'flex'; 
         }
         
+        // Efectos físicos (Vibración y Sonido)
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000]);
         sirena.currentTime = 0;
         sirena.play().catch(e => console.log("Audio:", e));
     }
 
-    // Función GLOBAL para cerrar
+    // Asegúrate de que esta función global exista para que el botón la pueda llamar
     window.cerrarAlerta = function() {
+        console.log("Cerrando alerta desde el Dashboard...");
+        
+        // Detener sonido
         sirena.pause();
         sirena.currentTime = 0;
+        
+        // Resetear estado
         isAlertActive = false;
         
+        // Ocultar la pantalla roja
         const overlay = document.getElementById('alerta-overlay');
-        if (overlay) overlay.style.display = 'none';
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
     };
 
     // --- 7. PUSH NOTIFICATIONS ---
