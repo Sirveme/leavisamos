@@ -96,39 +96,72 @@ def notify_family_and_security(db: Session, unit: str, title: str, body: str, ex
 
 # --- WEBSOCKET ENDPOINT ---
 @router.websocket("/ws/alerta")
-async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)):
+async def websocket_endpoint(
+    websocket: WebSocket, 
+    db: Session = Depends(get_db)
+):
     await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_json()
             
-            # CASO 1: LLEGADA ANTICIPADA (Botón Amarillo)
+            # --- CASO 1: LLEGADA ANTICIPADA (Botón Amarillo) ---
             if data.get("type") == "PRE_ARRIVAL":
                 usuario = data.get("user", "Vecino")
                 unidad = data.get("unit", "")
-                user_id = data.get("user_id") # Necesitamos mandar el ID desde el front
+                user_id = data.get("user_id") 
 
-                # A. WebSocket (Para el Guardia)
+                # A. WebSocket (Para el Guardia - Visual Inmediato)
                 await manager.broadcast({
                     "type": "PRE_ARRIVAL",
                     "user": usuario,
-                    "user_id": data.get("user_id"), # <--- ASEGURAR ESTO
+                    "user_id": user_id, 
                     "unit": unidad,
                     "msg": "Llegando en aprox. 5 min"
                 })
 
-                # B. Push a Familiares
-                notify_family_and_security(
-                    db, unit=unidad, 
-                    title="🟡 LLEGADA SEGURA", 
-                    body=f"{usuario} está llegando a casa.",
-                    exclude_user_id=user_id
-                )
+                # B. Push a Familiares (Secundario)
+                # Nota: Asegúrate de tener definida la función 'notify_family_and_security' arriba
+                try:
+                    notify_family_and_security(
+                        db, unit=unidad, 
+                        title="🟡 LLEGADA SEGURA", 
+                        body=f"{usuario} está llegando a casa.",
+                        exclude_user_id=user_id
+                    )
+                except Exception as e:
+                    print(f"Error Push Familia: {e}")
 
-            # CASO 2: PÁNICO (Rojo) - Se mantiene igual
+            # --- CASO 2: PÁNICO (Botón Rojo) ---
             elif data.get("type") == "PANIC_BUTTON":
-                # ... tu lógica existente ...
-                pass
+                usuario = data.get("user", "Vecino")
+                ubicacion = data.get("location", "")
+                
+                # 1. PRIORIDAD TOTAL: WebSocket (Pantalla Roja Inmediata)
+                # Enviamos esto ANTES de intentar el Push para evitar lag
+                await manager.broadcast({
+                    "type": "ALERTA_CRITICA",
+                    "user": usuario,
+                    "msg": "¡ALERTA DE SEGURIDAD!",
+                    "coords": data.get("coords")
+                })
+
+                # 2. SECUNDARIO: Push Notification Global
+                try:
+                    trigger_push_notifications(
+                        db,
+                        title="🚨 ALERTA VECINAL 🚨",
+                        body=f"{usuario} ha activado el botón de pánico. {ubicacion}"
+                    )
+                except Exception as e:
+                    print(f"Error Push Pánico (No bloqueante): {e}")
+
+            # --- CASO 3: ACTUALIZACIÓN GPS (Tracking) ---
+            elif data.get("type") == "GPS_UPDATE":
+                await manager.broadcast({
+                    "type": "GPS_UPDATE",
+                    "coords": data.get("coords")
+                })
                 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
