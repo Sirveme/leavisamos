@@ -1,91 +1,96 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="flex flex-col h-full gap-4">
+<!-- AQUÍ LE DECIMOS: "En esta página, usa todo el ancho" -->
+{% block container_width %}max-w-full lg:max-w-[95%]{% endblock %}
 
-    <!-- 1. CABECERA ALERTA (Status) -->
-    <div id="status-box" class="bg-slate-800 border border-slate-600 p-3 rounded-xl text-center transition-colors duration-500 shrink-0">
-        <h1 class="text-lg font-bold text-slate-200"><i class="ph ph-shield-check mr-2"></i>CENTINELA</h1>
-        <p id="status-text" class="text-xs text-slate-400">Sistema Activo</p>
-        <button id="btn-silenciar" onclick="silenciarAlarma()" class="hidden mt-2 bg-white text-red-600 px-4 py-1 rounded-full text-sm font-bold animate-bounce">
-            ATENDER ALERTA
+{% block content %}
+
+<!-- Contenedor Principal: Altura fija de pantalla, sin scroll en el body -->
+<div class="flex flex-col h-[calc(100vh-2rem)] gap-4 overflow-hidden">
+
+    <!-- 1. CABECERA -->
+    <div id="status-box" class="bg-slate-800 border border-slate-600 p-3 rounded-xl flex items-center justify-between transition-colors duration-500 shrink-0 shadow-md">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-slate-900 rounded-lg">
+                <i class="ph ph-shield-check text-2xl text-indigo-400"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-200 leading-none">CENTINELA</h1>
+                <p id="status-text" class="text-xs text-slate-400 mt-1">Monitoreo Activo</p>
+            </div>
+        </div>
+        <button id="btn-silenciar" onclick="silenciarAlarma()" class="hidden bg-red-500 hover:bg-red-400 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg animate-pulse">
+            ATENDER
         </button>
     </div>
 
-    <!-- CONTENEDOR GRID (Para Tablet/PC) -->
-    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
+    <!-- 2. ÁREA DE TRABAJO (Grid Responsive) -->
+    <!-- overflow-hidden aquí es clave para evitar doble scroll -->
+    <!-- 2. ÁREA DE TRABAJO (Responsive Real) -->
+    <div class="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden min-h-0">
         
-        <!-- COLUMNA IZQUIERDA: BITÁCORA EN VIVO -->
-        <div class="bg-black rounded-xl p-3 flex flex-col border border-slate-800 h-full overflow-hidden">
-            <div class="text-[10px] text-slate-500 mb-2 uppercase tracking-wider">Eventos en Tiempo Real</div>
-            <div id="security-log" class="overflow-y-auto flex-1 font-mono text-xs space-y-2 pr-2">
-                <!-- Aquí caen las alertas y registros -->
+        <!-- COLUMNA IZQUIERDA: BITÁCORA -->
+        <!-- En mobile: Altura fija (200px) o visible. En PC: Flex-1 (ocupa espacio) -->
+        <div class="h-48 lg:h-auto lg:w-1/3 bg-black rounded-xl border border-slate-800 flex flex-col overflow-hidden shadow-inner shrink-0 order-2 lg:order-1">
+            <div class="bg-slate-900/50 p-2 border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-wider font-bold flex justify-between">
+                <span>Bitácora en Vivo</span>
+                <span class="text-green-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> LIVE</span>
+            </div>
+            <div id="security-log" class="flex-1 overflow-y-auto p-3 font-mono text-xs space-y-2">
+                <!-- Logs aquí -->
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: PANEL DE ACCIÓN -->
-        <div class="bg-slate-900 rounded-xl p-4 flex flex-col border border-slate-800 overflow-y-auto">
+        <!-- COLUMNA DERECHA: OPERACIONES -->
+        <!-- En mobile: Ocupa el resto. En PC: W-2/3 (Más ancho) -->
+        <div class="flex-1 lg:w-2/3 bg-slate-900 rounded-xl border border-slate-800 flex flex-col overflow-hidden shadow-xl order-1 lg:order-2">
+
+            <div class="mb-4">
+                <button id="btn-panico-centinela" 
+                        class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/50 flex items-center justify-center gap-3 transition-transform active:scale-95">
+                    <i class="ph ph-warning-octagon text-3xl animate-pulse"></i>
+                    <span class="text-xl">ACTIVAR ALERTA GENERAL</span>
+                </button>
+            </div>
             
-            <!-- A. VALIDACIÓN VISUAL (Buscador) -->
-            <div class="mb-6">
-                <label class="text-xs text-indigo-400 font-bold uppercase mb-2 block">Validar Residente / Unidad</label>
-                <div class="flex gap-2">
+            <!-- Buscador Fijo -->
+            <div class="p-4 border-b border-slate-800 bg-slate-900 z-10">
+                <div class="relative max-w-2xl mx-auto"> <!-- Centrado en pantallas grandes -->
+                    <i class="ph ph-magnifying-glass absolute left-4 top-3.5 text-slate-500 text-lg"></i>
                     <input type="text" name="query" 
-                           class="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2 text-sm focus:border-indigo-500 outline-none"
-                           placeholder="Ej: 501, Juan..."
+                           class="w-full bg-black border border-slate-700 text-white rounded-xl pl-12 pr-4 py-3 text-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder-slate-600"
+                           placeholder="Buscar Unidad (501) o Nombre..."
+                           autocomplete="off"
                            hx-post="/centinela/search" 
-                           hx-trigger="keyup changed delay:500ms" 
+                           hx-trigger="keyup changed delay:300ms" 
                            hx-target="#search-results">
                 </div>
-                <!-- Resultados de búsqueda -->
-                <div id="search-results" class="mt-3 max-h-40 overflow-y-auto"></div>
             </div>
 
-            <hr class="border-slate-800 mb-6">
-
-            <!-- B. REGISTRO RÁPIDO -->
-            <form hx-post="/centinela/log" hx-target="#security-log" hx-swap="afterbegin" onsubmit="limpiarForm()">
-                <label class="text-xs text-green-400 font-bold uppercase mb-2 block">Registro de Ingreso</label>
-                
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="tipo" value="DELIVERY" class="peer hidden" checked>
-                        <div class="bg-slate-800 peer-checked:bg-orange-600 peer-checked:text-white text-slate-400 py-2 px-4 rounded text-center text-sm border border-slate-700 transition-all">
-                            🛵 Delivery
-                        </div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="tipo" value="VISITA" class="peer hidden">
-                        <div class="bg-slate-800 peer-checked:bg-blue-600 peer-checked:text-white text-slate-400 py-2 px-4 rounded text-center text-sm border border-slate-700 transition-all">
-                            👤 Visita
-                        </div>
-                    </label>
+            <!-- Resultados -->
+            <div id="search-results" class="flex-1 overflow-y-auto p-4 bg-slate-950/50 relative">
+                <div class="flex flex-col items-center justify-center h-full text-slate-600 opacity-50">
+                    <i class="ph ph-hand-pointing text-6xl mb-4"></i>
+                    <p class="text-lg">Ingrese un número de departamento</p>
                 </div>
-
-                <div class="space-y-3">
-                    <input type="text" id="input-unidad" name="unidad" placeholder="Unidad (Ej: 501)" required
-                           class="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2 text-sm">
-                    
-                    <input type="text" id="input-detalle" name="detalle" placeholder="Nombre / Empresa / DNI" required
-                           class="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2 text-sm">
-                    
-                    <button type="submit" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded font-bold transition-colors">
-                        REGISTRAR INGRESO
-                    </button>
-                </div>
-            </form>
+            </div>
 
         </div>
     </div>
 </div>
 
-<!-- Configuración mínima -->
+<!-- Configuración JS -->
 <script>
     window.APP_CONFIG = {
         wsUrl: (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/alerta'
     };
 </script>
-
 <script src="/static/js/pages/home_security.js"></script>
 
+<!-- Estilos Extra para Scrollbar Horizontal -->
+<style>
+    .scrollbar-thin::-webkit-scrollbar { height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+</style>
 {% endblock %}
