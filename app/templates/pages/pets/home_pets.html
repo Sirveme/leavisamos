@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block container_width %}max-w-full md:max-w-2xl lg:max-w-4xl{% endblock %}
+
+{% block content %}
+<div class="fade-me-in pb-20">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-white">Mascotas del Edificio</h1>
+        <button onclick="document.getElementById('modal-new-pet').showModal()" 
+                class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+            + Agregar
+        </button>
+    </div>
+
+    <!-- GRID DE MASCOTAS -->
+    <div id="pets-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for pet in pets %}
+            {% include "components/pet_card.html" %}
+        {% endfor %}
+    </div>
+
+    <!-- MODAL NUEVA MASCOTA (HTML Nativo <dialog>) -->
+    <dialog id="modal-new-pet" class="bg-slate-900 text-white p-6 rounded-2xl backdrop:bg-black/80 w-full max-w-sm border border-slate-700">
+        <h3 class="text-lg font-bold mb-4">Registrar Mascota</h3>
+        <form hx-post="/pets/register" hx-target="#pets-grid" hx-swap="beforeend" enctype="multipart/form-data" 
+              hx-on::after-request="document.getElementById('modal-new-pet').close()">
+            
+            <input type="text" name="name" placeholder="Nombre (ej: Firulais)" class="w-full bg-black border border-slate-700 rounded p-2 mb-3 text-white" required>
+            
+            <select name="species" class="w-full bg-black border border-slate-700 rounded p-2 mb-3 text-white">
+                <option value="dog">Perro</option>
+                <option value="cat">Gato</option>
+            </select>
+            
+            <textarea name="notes" placeholder="Señas particulares..." class="w-full bg-black border border-slate-700 rounded p-2 mb-4 text-white"></textarea>
+            
+            <div class="flex gap-2">
+                <button type="button" onclick="this.closest('dialog').close()" class="flex-1 bg-slate-700 py-2 rounded">Cancelar</button>
+                <button type="submit" class="flex-1 bg-indigo-600 py-2 rounded font-bold">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+</div>
+
+<!-- SCRIPT PARA COMPARTIR -->
+<script>
+    function compartirMascota(nombre, especie, estado) {
+        if (navigator.share) {
+            navigator.share({
+                title: `Mascota de LeAvisamos: ${nombre}`,
+                text: estado ? `🚨 ¡AYUDA! Se perdió ${nombre} (${especie}) en nuestro edificio. Si lo ves avísanos.` : `Conoce a ${nombre}, nuestro vecino peludo.`,
+                url: window.location.href // Idealmente un link directo al perfil
+            })
+            .then(() => console.log('Compartido con éxito'))
+            .catch((error) => console.log('Error compartiendo', error));
+        } else {
+            alert("Tu navegador no soporta compartir nativo.");
+        }
+    }
+</script>
+{% endblock %}
