@@ -279,8 +279,6 @@ class BulletinEvent(Base):
 
 # --- MÓDULO VIDA SOCIAL ---
 
-# En app/models.py
-
 class Pet(Base):
     __tablename__ = "pets"
     id = Column(Integer, primary_key=True)
@@ -308,3 +306,43 @@ class Pet(Base):
     contact_phone = Column(String, nullable=True)
     
     owner = relationship("Member")
+
+
+class Debt(Base):
+    __tablename__ = "debts"
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    member_id = Column(Integer, ForeignKey("members.id"))
+    
+    concept = Column(String)
+    amount = Column(Float)
+    balance = Column(Float)
+    status = Column(String, default="pending")
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    attachment_url = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relaciones
+    member = relationship("Member")
+    organization = relationship("Organization")
+
+
+# MÓDULO SOCIAL
+class Reaction(Base):
+    __tablename__ = "reactions"
+    id = Column(Integer, primary_key=True)
+    member_id = Column(Integer, ForeignKey("members.id"))
+    target_type = Column(String) # 'pet'
+    target_id = Column(Integer)
+    reaction_type = Column(String) # 'like'
+
+class Comment(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True)
+    member_id = Column(Integer, ForeignKey("members.id"))
+    target_type = Column(String) # 'pet'
+    target_id = Column(Integer)
+    content = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    member = relationship("Member") # Para saber quién comentó
