@@ -8,9 +8,8 @@
 {% block container_width %}max-w-full md:max-w-2xl lg:max-w-4xl{% endblock %}
 
 {% block content %}
-<div class="fade-me-in">
+<div class="fade-me-in pb-20"> <!-- Padding bottom para que el contenido no quede tapado por botones -->
     
-    <!-- Cabecera -->
     <!-- Cabecera -->
     <header class="header-section flex justify-between items-start">
         <div class="user-welcome">
@@ -29,17 +28,12 @@
         </button>
     </header>
 
-    <!-- Tarjeta de Deuda -->
-    <section class="balance-card">
-        <span class="balance-label">Deuda Pendiente</span>
-        <span class="balance-amount">{{ deuda }}</span>
-        <div class="balance-footer">
-            <span>Vence: {{ vencimiento }}</span>
-            <span class="flex items-center gap-1">
-                <i class="ph ph-warning-circle"></i> Pagar
-            </span>
-        </div>
-    </section>
+    <!-- Tarjeta de Deuda (Carga diferida para no bloquear la página) -->
+    <div hx-get="/finance/my-summary" 
+         hx-trigger="load" 
+         hx-swap="outerHTML"
+         class="animate-pulse bg-slate-800 h-48 rounded-2xl mb-6">
+    </div>
 
     <!-- Menú de Acciones -->
     <section class="menu-grid">
@@ -60,7 +54,7 @@
             <span class="menu-title">Activar Alertas</span>
         </div>
 
-        <!-- BOTÓN MASCOTAS (Nuevo) -->
+        <!-- BOTÓN MASCOTAS -->
         <a href="/pets" class="menu-item block text-decoration-none">
             <i class="ph ph-paw-print menu-icon text-orange-400"></i>
             <span class="menu-title">Mascotas</span>
@@ -68,7 +62,7 @@
 
         <!-- Botón Votación (Demo) -->
         <div class="menu-item">
-            <i class="ph ph-hands-clapping menu-icon text-green-400"></i> <!-- Color distinto -->
+            <i class="ph ph-hands-clapping menu-icon text-green-400"></i> 
             <span class="menu-title">Votar</span>
         </div>
 
@@ -81,92 +75,126 @@
 
 </div>
 
-<!-- BOTONES DE ACCIÓN FLOTANTES (Nuevos) -->
-    <div class="fixed bottom-28 right-6 flex flex-col gap-4 z-40">
-        
-        <!-- BOTÓN VERDE: YA LLEGUÉ (Check-in) -->
-        <!-- Solo visible si el usuario está cerca (o siempre visible para demo) -->
-        <button id="btn-checkin" 
-                class="w-12 h-12 bg-green-600 rounded-full shadow-lg shadow-green-600/50 flex items-center justify-center text-white border-2 border-green-400 active:scale-90 transition-transform"
-                title="Marcar Ingreso Seguro">
-            <i class="ph ph-map-pin-check text-xl"></i>
-        </button>
+<!-- --- ELEMENTOS FLOTANTES (CAPA SUPERIOR) --- -->
 
-        <!-- BOTÓN AMARILLO: VOY LLEGANDO -->
-        <button id="btn-llegando" 
-                class="w-12 h-12 bg-yellow-500 rounded-full shadow-lg shadow-yellow-500/50 flex items-center justify-center text-white border-2 border-yellow-300 active:scale-90 transition-transform"
-                title="Avisar Llegada">
-            <i class="ph ph-person-simple-walk text-xl"></i>
-        </button>
-        
-    </div>
+<!-- 1. CINTA DE NOTICIAS (Z-50) -->
+<div id="news-ticker" 
+    class="ticker-wrap" 
+    onclick="verUltimoBoletin()" 
+    style="display: none; bottom: 0; z-index: 50;"
+    data-initial-title="{{ latest_bulletin.title if latest_bulletin else '' }}"
+    data-initial-priority="{{ latest_bulletin.priority if latest_bulletin else '' }}">
+    <div id="ticker-text" class="ticker-content"></div>
+</div>
 
-
-<!-- BOTÓN DE PÁNICO FLOTANTE -->
-    <div class="fixed bottom-6 right-6 z-40">
-        <button id="btn-panico" 
-                class="w-16 h-16 bg-red-600 rounded-full shadow-lg shadow-red-600/50 flex items-center justify-center animate-pulse text-white border-4 border-red-800 active:scale-90 transition-transform">
-            <i class="ph ph-siren text-3xl"></i>
-        </button>
-    </div>
-
+<!-- 2. BOTONES DE ACCIÓN (Z-40) -->
+<!-- DOCK DE ACCIONES (Centrado abajo) -->
+<!-- DOCK DE ACCIONES (Barra inferior central) -->
+<div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 flex items-end gap-4 p-2 bg-black/20 backdrop-blur-sm rounded-full border border-white/10">
     
-        
-    <!-- BOTONES DE ACCIÓN -->
-    <!-- PANTALLA DE ALERTA (Overlay Blindado) -->
-    <!-- Usamos style display: none por defecto y z-index máximo -->
-    <!-- PANTALLA DE ALERTA (PURE CSS) -->
-    <div id="alerta-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #dc2626; z-index: 2147483647; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white;">
-        
-        <!-- Ícono Gigante -->
-        <div style="font-size: 8rem; margin-bottom: 20px; animation: pulse 1s infinite;">
-            <i class="ph ph-warning-octagon"></i>
-        </div>
-        
-        <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 10px;">¡ALERTA!</h1>
-        
-        <!-- Mensaje -->
-        <div id="alerta-msg" style="font-size: 1.5rem; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.3); max-width: 90%;">
-            Cargando...
-        </div>
-        
-        <!-- Botones -->
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px;">
-            
-            <a href="https://alerta.pe/reportar?ref=leavisamos" target="_blank" 
-               style="background: black; color: white; padding: 15px; border-radius: 50px; text-decoration: none; font-weight: bold; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i class="ph ph-map-pin-line" style="font-size: 1.5rem;"></i> REPORTAR DELITO
-            </a>
+    <!-- Botón Llegada (Amarillo) -->
+    <button id="btn-llegando" 
+            class="w-12 h-12 bg-yellow-500 rounded-full shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform border-2 border-slate-800"
+            title="Avisar llegada">
+        <i class="ph ph-person-simple-walk text-xl"></i>
+    </button>
 
-            <button type="button" onclick="window.cerrarAlerta()" 
-                    style="background: white; color: #dc2626; padding: 15px; border-radius: 50px; font-weight: bold; border: none; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-                SILENCIAR / CERRAR
+    <!-- Botón Pánico (Rojo - Gigante) -->
+    <button id="btn-panico" 
+            class="w-16 h-16 bg-red-600 rounded-full shadow-2xl flex items-center justify-center text-white border-4 border-slate-900 active:scale-95 transition-transform relative -top-4 overflow-hidden group">
+        <div class="absolute inset-0 bg-red-500 animate-ping opacity-20 group-hover:opacity-40"></div>
+        <i class="ph ph-siren text-3xl relative z-10"></i>
+    </button>
+
+    <!-- Botón Micrófono (Azul - Futuro) -->
+    <button onclick="activarNeural()" 
+            class="w-12 h-12 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform border-2 border-slate-800">
+        <i class="ph ph-microphone text-xl"></i>
+    </button>
+
+</div>
+
+<!-- Botón Check-in (Verde - Oculto por defecto) -->
+<div id="btn-checkin-container" class="hidden fixed bottom-32 left-1/2 transform -translate-x-1/2 z-40 animate-bounce">
+    <button id="btn-checkin" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-xl border-2 border-white flex items-center gap-2">
+        <i class="ph ph-map-pin-check text-xl"></i> CONFIRMAR INGRESO
+    </button>
+</div>
+
+<!-- 4. MODAL DE BOLETÍN (Z-100 - Diálogo Nativo) -->
+<dialog id="modal-bulletin" class="bg-slate-900 text-white p-0 rounded-2xl backdrop:bg-black/90 w-full max-w-md shadow-2xl border border-slate-700 z-[100]">
+    <div id="bulletin-header" class="p-6 bg-indigo-600">
+        <div class="flex justify-between items-start">
+            <h3 id="bulletin-title" class="text-2xl font-bold leading-tight">Título</h3>
+            <button onclick="document.getElementById('modal-bulletin').close()" class="text-white/70 hover:text-white">
+                <i class="ph ph-x text-2xl"></i>
             </button>
         </div>
+        <div class="mt-2 flex gap-2 text-xs font-mono text-white/80">
+            <span id="bulletin-date">--</span>
+            <span>•</span>
+            <span id="bulletin-priority" class="uppercase font-bold">INFO</span>
+        </div>
     </div>
+    <div class="p-6 overflow-y-auto max-h-[60vh]">
+        <p id="bulletin-content" class="text-slate-300 text-lg leading-relaxed whitespace-pre-wrap">...</p>
+    </div>
+    <div class="p-4 bg-black/20 border-t border-slate-700 flex gap-3">
+        <button onclick="compartirBoletin()" class="flex-1 bg-transparent border border-slate-500 text-slate-300 px-4 py-3 rounded-xl font-bold hover:bg-slate-800 hover:text-white transition-colors flex items-center justify-center gap-2">
+            <i class="ph ph-share-network text-xl"></i> Compartir
+        </button>
+        <button onclick="marcarLeido()" class="flex-[2] bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors shadow-lg flex items-center justify-center gap-2">
+            <i class="ph ph-check-circle text-xl"></i> ENTENDIDO
+        </button>
+    </div>
+</dialog>
 
-    <!-- Animación simple CSS -->
-    <style>
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-    </style>
+<!-- 5. PANTALLA DE ALERTA ROJA (Z-MAXIMO) -->
+<!-- Estilos Inline Blindados -->
+<div id="alerta-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #dc2626; z-index: 2147483647; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white;">
+    <div style="font-size: 8rem; margin-bottom: 20px; animation: pulse 1s infinite;">
+        <i class="ph ph-warning-octagon"></i>
+    </div>
+    <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 10px;">¡ALERTA!</h1>
+    <div id="alerta-msg" style="font-size: 1.5rem; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.3); max-width: 90%;">
+        Cargando...
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px;">
+        <a href="https://alerta.pe/reportar?ref=leavisamos" target="_blank" 
+           style="background: black; color: white; padding: 15px; border-radius: 50px; text-decoration: none; font-weight: bold; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="ph ph-map-pin-line" style="font-size: 1.5rem;"></i> REPORTAR DELITO
+        </a>
+        <!-- Botón Detener -->
+        <button type="button" onclick="window.cerrarAlerta()" 
+                style="background: white; color: #dc2626; padding: 15px; border-radius: 50px; font-weight: bold; border: none; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            SILENCIAR / CERRAR
+        </button>
+    </div>
+</div>
 
-    <script>
-        window.APP_CONFIG = {
-            user: {
-                id: "{{ user.id }}",
-                name: "{{ user.name }}",
-                unit: "{{ user.unit_info }}"
-            },
-            vapidPublicKey: "{{ vapid_public_key }}",
-            wsUrl: (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/alerta'
-        };
-    </script>
+<!-- Animación simple CSS -->
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
 
-    <!-- Cargar Script Externo -->
-    <script src="/static/js/pages/dashboard.js"></script>
+<!-- CONFIGURACIÓN JS -->
+<script>
+    window.APP_CONFIG = {
+        user: {
+            id: "{{ user.id }}",
+            name: "{{ user.name }}",
+            unit: "{{ user.unit_info }}"
+        },
+        vapidPublicKey: "{{ vapid_public_key }}",
+        wsUrl: (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/alerta'
+    };
+</script>
+
+<!-- Cargar Script Externo -->
+<script src="/static/js/pages/dashboard.js"></script>
 
 {% endblock %}
