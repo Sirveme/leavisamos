@@ -60,6 +60,15 @@
 
     </main>
 
+
+    <!-- CINTA DE NOTICIAS -->
+    <div id="news-ticker" class="ticker-wrap" onclick="verUltimoBoletin()">
+        <div id="ticker-text" class="ticker-content">
+            <!-- El texto se inyecta por JS -->
+        </div>
+    </div>
+
+
     <script>
         // Lógica de carga visual para HTMX
         document.body.addEventListener('htmx:beforeRequest', function(evt) {
