@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     radioSiren.loop = true;   // La sirena no para hasta que el guardia atienda
     soundDing.loop = false;   // El timbre suena una sola vez
 
+    // Estado de Zoom
+    let currentFontSize = 12; // px
+    const synth = window.speechSynthesis;
+
     // --- 2. VARIABLES GLOBALES ---
     let socket = null;
     let selectedUsers = new Set(); // Almacena IDs únicos
@@ -85,51 +89,52 @@ document.addEventListener('DOMContentLoaded', () => {
         const box = document.getElementById('status-box');
         const statusText = document.getElementById('status-text');
 
-        // Obtener hora actual
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        // A. CAMBIO DE COLOR FORZADO (Inline Style para evitar fallos de Tailwind)
+        // A. CAMBIO DE COLOR FORZADO
         if (colorClass.includes('red')) {
-            box.style.backgroundColor = '#dc2626'; // Rojo Intenso
+            box.style.backgroundColor = '#dc2626'; 
             box.style.borderColor = '#fee2e2';
             statusText.style.color = '#ffffff';
-            // Mostrar botón atender solo si es rojo
             document.getElementById('btn-silenciar').classList.remove('hidden');
         } 
         else if (colorClass.includes('yellow')) {
-            box.style.backgroundColor = '#ca8a04'; // Amarillo Oscuro
+            box.style.backgroundColor = '#ca8a04';
             box.style.borderColor = '#fef08a';
             statusText.style.color = '#ffffff';
         }
         else {
-            // Reset (Volver al gris original)
             box.style.backgroundColor = ''; 
             box.style.borderColor = '';
             statusText.style.color = '';
         }
         
-        // Animación y Texto
         box.classList.add('animate-pulse');
         statusText.innerText = `${titlePrefix}: ${data.user}`;
 
         // B. CREAR TARJETA DE LOG
-        // ID único para tracking de llegada (log-user-123)
         const divId = data.user_id ? `id="log-user-${data.user_id}"` : '';
         
-        // Mapear color para el borde del log
+        // Colores
         let logBg = 'rgba(255,255,255,0.1)';
-        let logBorder = '#64748b'; // Gris
+        let logBorder = '#64748b'; 
         if (colorClass.includes('red')) { logBg = 'rgba(220, 38, 38, 0.3)'; logBorder = '#ef4444'; }
         if (colorClass.includes('yellow')) { logBg = 'rgba(202, 138, 4, 0.3)'; logBorder = '#eab308'; }
 
+        // Texto para leer
+        const readText = `${titlePrefix}. ${data.user}. ${data.msg || ''}`.replace(/'/g, "\\'");
+
         const html = `
-            <div ${divId} style="background: ${logBg}; border-left: 4px solid ${logBorder}; padding: 8px; margin-bottom: 8px; color: white; display: flex; justify-content: space-between; align-items: center;" class="fade-me-in cursor-pointer">
+            <div ${divId} style="background: ${logBg}; border-left: 4px solid ${logBorder}; padding: 8px; margin-bottom: 8px; color: white; display: flex; justify-content: space-between; align-items: start;" class="fade-me-in cursor-pointer">
                 <div>
                     <strong>${titlePrefix}: ${data.user} (${data.unit || ''})</strong><br>
                     <span style="font-size: 0.75rem; opacity: 0.9;">${data.msg || ''}</span>
                 </div>
-                <div style="font-family: monospace; font-size: 1rem; font-weight: bold; opacity: 0.8;">
-                    ${time}
+                <div style="display: flex; flex-direction: column; align-items: end; gap: 5px;">
+                    <span style="font-family: monospace; font-size: 1rem; font-weight: bold; opacity: 0.8;">${time}</span>
+                    <button onclick="event.stopPropagation(); speakText('${readText}')" class="text-white/70 hover:text-white" title="Leer">
+                        <i class="ph ph-speaker-high text-lg"></i>
+                    </button>
                 </div>
             </div>
         `;
@@ -147,38 +152,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // B. Transición de Amarillo a Verde
     function actualizarLlegada(data) {
-        // Reset cabecera si estaba mostrando llegada
+        // Reset cabecera
         const headerText = document.getElementById('status-text').innerText;
         if (headerText.includes("LLEGANDO") || headerText.includes(data.user)) {
-            window.silenciarAlarma(); // Reset visual de cabecera
+            window.silenciarAlarma(); 
         }
 
         const existingLog = document.getElementById(`log-user-${data.user_id}`);
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Texto para leer
+        const readText = `Ya llegó: ${data.user}. Confirmado por ${data.method || 'Sistema'}.`.replace(/'/g, "\\'");
 
         if (existingLog) {
-            // Actualizar tarjeta existente (Efecto visual)
-            // Forzamos estilos verdes inline
-            existingLog.style.background = 'rgba(22, 163, 74, 0.3)'; // Verde
+            // Actualizar tarjeta existente
+            existingLog.style.background = 'rgba(22, 163, 74, 0.3)'; 
             existingLog.style.borderLeftColor = '#22c55e';
             
             existingLog.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
                     <div>
                         <strong style="color:#4ade80;">✔ YA LLEGÓ: ${data.user}</strong>
                         <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">
                             Confirmado por: <strong>${data.method || 'Sistema'}</strong>
                         </div>
                     </div>
-                    <span style="font-size:1.2rem; color:#4ade80; font-family:monospace; font-weight:bold;">${time}</span>
+                    <div style="display: flex; flex-direction: column; align-items: end; gap: 5px;">
+                        <span style="font-size:1.2rem; color:#4ade80; font-family:monospace; font-weight:bold;">${time}</span>
+                        <button onclick="event.stopPropagation(); speakText('${readText}')" class="text-green-400 hover:text-white" title="Leer">
+                            <i class="ph ph-speaker-high text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             `;
-            // Sonido suave
-            const soundOk = new Audio('/static/audio/ding-dong.mp3');
+            const soundOk = new Audio('/static/sounds/ding-dong.mp3');
             soundOk.play().catch(e=>{});
         } else {
-            // Si no había tarjeta previa, log normal verde
+            // Si no había tarjeta previa
             logSystem(`✅ INGRESO: ${data.user} (${data.unit || ''})`, "text-green-400 font-bold");
+            // Nota: logSystem ya incluye su propio botón de lectura
         }
     }
 
@@ -319,14 +331,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function logSystem(text, colorClass) {
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        // Mapeo simple de color para log del sistema (estilos inline)
+        
+        // Mapeo simple de color
         let colorStyle = 'color: #94a3b8;'; 
         if (colorClass.includes('green')) colorStyle = 'color: #4ade80;';
         if (colorClass.includes('red')) colorStyle = 'color: #ef4444;';
         if (colorClass.includes('orange')) colorStyle = 'color: #fb923c;';
         
-        const html = `<div style="border-left: 2px solid #334155; padding-left: 8px; margin-bottom: 4px; font-size: 10px; color: #64748b;">
-            <span style="${colorStyle}">●</span> [${time}] ${text}
+        // Preparar texto para lectura (Escapar comillas simples)
+        const safeText = text.replace(/'/g, "\\'");
+        
+        // Botón Parlante
+        const speakBtn = `
+            <button onclick="event.stopPropagation(); speakText('${safeText}')" 
+                    class="ml-2 text-slate-500 hover:text-white transition-colors" 
+                    title="Leer">
+                <i class="ph ph-speaker-high"></i>
+            </button>
+        `;
+        
+        const html = `<div style="border-left: 2px solid #334155; padding-left: 8px; margin-bottom: 4px; font-size: 10px; color: #64748b; display: flex; align-items: center;">
+            <span style="${colorStyle} margin-right: 5px;">●</span> [${time}] ${text} ${speakBtn}
         </div>`;
         appendToLog(html);
     }
@@ -343,6 +368,53 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('input-unidad').value = "";
             document.getElementById('search-results').innerHTML = "";
         }, 100);
+    };
+
+
+    // --- 9. ACCESIBILIDAD e IA ---
+
+    // A. Lectura de Texto (TTS)
+    window.speakText = function(text) {
+        if (synth.speaking) synth.cancel();
+        
+        const utter = new SpeechSynthesisUtterance(text);
+        // Intentar usar voz en español
+        const voices = synth.getVoices();
+        const esVoice = voices.find(v => v.lang.includes('es'));
+        if (esVoice) utter.voice = esVoice;
+        
+        utter.rate = 1.1;
+        synth.speak(utter);
+    };
+
+    // B. Resumen Inteligente (Briefing)
+    window.playBriefing = async function() {
+        const btn = document.querySelector('button[onclick="playBriefing()"]');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> ...';
+        
+        try {
+            const res = await fetch('/api/brain/briefing');
+            const data = await res.json();
+            
+            if (data.status === 'ok') {
+                logSystem("🤖 IA: " + data.text, "text-indigo-400");
+                window.speakText(data.text);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            btn.innerHTML = original;
+        }
+    };
+
+    // C. Control de Tamaño de Fuente
+    window.changeFontSize = function(delta) {
+        currentFontSize += delta;
+        if (currentFontSize < 10) currentFontSize = 10;
+        if (currentFontSize > 24) currentFontSize = 24;
+        
+        document.getElementById('security-log').style.fontSize = `${currentFontSize}px`;
     };
 
     // --- INICIAR ---
