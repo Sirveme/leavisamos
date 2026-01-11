@@ -249,3 +249,26 @@ async def create_bulletin(
         <div class="mt-2 text-[10px] text-slate-500 text-right">Hace un instante</div>
     </div>
     """)
+
+
+#==================================================================
+# API: OBTENER ÚLTIMO BOLETÍN (Para el Dashboard)
+#==================================================================
+
+@router.get("/api/bulletins/latest")
+async def get_latest_bulletin(db: Session = Depends(get_db), member: Member = Depends(get_current_member)):
+    # Buscar el último boletín de su organización
+    bulletin = db.query(Bulletin).filter(
+        Bulletin.organization_id == member.organization_id
+    ).order_by(Bulletin.created_at.desc()).first()
+    
+    if not bulletin:
+        return {"status": "empty"}
+        
+    return {
+        "status": "ok",
+        "title": bulletin.title,
+        "content": bulletin.content,
+        "priority": bulletin.priority,
+        "date": bulletin.created_at.isoformat()
+    }

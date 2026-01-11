@@ -2,11 +2,18 @@
 from fastapi import APIRouter, Depends, Body, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Device, Member, AccessLog, MemberRole
+from app.models import Device, Member, AccessLog, MemberRole, PanicLog
 from app.routers.dashboard import get_current_member
+from openai import OpenAI
+from datetime import datetime, timedelta, timezone
+import os
+import json
+
 from sqlalchemy import func
 
 from app.routers.ws import manager # Para avisar al websocket
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -91,3 +98,110 @@ async def check_in_proximity(
     })
     
     return {"status": "ok", "msg": "Ingreso registrado correctamente"}
+
+
+#================================================================
+# CEREBRO IA: PROCESAR COMANDO DE VOZ
+# LA CENTRAL NEURAL (Integración OpenAI) 🧠✨
+#================================================================
+@router.post("/brain/process-command")
+async def process_voice_command(payload: dict = Body(...)):
+    # payload = { "text": "Avisa corte de luz mañana a las 5", "role": "admin" }
+    command_text = payload.get("text")
+    user_role = payload.get("role")
+    
+    print(f"🧠 Cerebro procesando: {command_text}")
+
+    # Prompt del Sistema (Instrucciones)
+    system_prompt = """
+    Eres el asistente IA de un condominio. Tu trabajo es interpretar comandos de voz y devolver una acción JSON estructurada.
+    
+    ACCIONES DISPONIBLES:
+    1. Si es Admin y quiere comunicar algo:
+       Return: {"action": "fill_bulletin", "title": "...", "content": "...", "priority": "info/warning/alert"}
+    
+    2. Si es Vecino/Guardia y reporta una llegada o visita:
+       Return: {"action": "log_access", "type": "visita", "name": "..."}
+       
+    3. Si es Vecino y pregunta deuda:
+       Return: {"action": "check_debt"}
+       
+    Responde SOLO el JSON.
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini", # O gpt-3.5-turbo
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Rol: {user_role}. Comando: {command_text}"}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3
+        )
+        
+        response_json = json.loads(completion.choices[0].message.content)
+        return {"status": "ok", "data": response_json}
+        
+    except Exception as e:
+        print(f"Error OpenAI: {e}")
+        return {"status": "error", "msg": "Cerebro desconectado temporalmente"}
+    
+
+#================================================================
+#Endpoint: RESUMEN DE SEGURIDAD (Briefing IA)
+# La Central Neural (Integración OpenAI) 🧠✨
+#================================================================
+@router.get("/brain/briefing")
+async def get_security_briefing(
+    db: Session = Depends(get_db), 
+    member: Member = Depends(get_current_member)
+):
+    # 1. Obtener eventos recientes (últimas 12h) usando la forma moderna
+    since = datetime.now(timezone.utc) - timedelta(hours=12)
+    
+    panics = db.query(PanicLog).filter(
+        PanicLog.organization_id == member.organization_id,
+        PanicLog.created_at >= since
+    ).all()
+    
+    access = db.query(AccessLog).filter(
+        AccessLog.organization_id == member.organization_id,
+        AccessLog.created_at >= since,
+        AccessLog.method.in_(["MANUAL", "MANUAL_GUARDIA", "APP_CHECKIN"])
+    ).order_by(AccessLog.created_at.desc()).limit(10).all()
+
+    # 2. Si no hay nada, responder rápido
+    if not panics and not access:
+        return {"status": "ok", "text": "Sin novedades en el turno. Todo tranquilo."}
+
+    # 3. Preparar datos para GPT
+    data_text = f"ALERTAS ROJAS: {len(panics)}. "
+    if panics:
+        data_text += "Última alerta de pánico hace poco. "
+        
+    data_text += f"INGRESOS RECIENTES ({len(access)}): "
+    for a in access:
+        # Convertir a hora local simple para el texto (aprox)
+        # Nota: En producción, idealmente se ajusta al timezone de la org
+        hora = a.created_at.strftime("%H:%M")
+        data_text += f"- {a.visitor_name} a las {hora}. "
+
+    # 4. Consultar a OpenAI
+    try:
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Eres un jefe de seguridad. Resume estos eventos en 2 frases cortas y formales para ser leídas por radio al guardia."},
+                {"role": "user", "content": data_text}
+            ],
+            max_tokens=100
+        )
+        summary = completion.choices[0].message.content
+        return {"status": "ok", "text": summary}
+        
+    except Exception as e:
+        print(f"Error IA: {e}")
+        return {"status": "ok", "text": f"Resumen manual: {len(panics)} alertas y {len(access)} ingresos recientes."}
