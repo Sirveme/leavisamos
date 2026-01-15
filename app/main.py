@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from .database import engine, Base
-from .routers import auth, dashboard, ws, api, admin, security, pets
+from .routers import auth, dashboard, ws, api, admin, security, pets, finance, services, partners
 from .config import THEMES
 
 # Base.metadata.create_all(bind=engine) # Descomentar solo si usas SQLite local
@@ -18,16 +18,23 @@ templates = Jinja2Templates(directory="app/templates")
 async def add_domain_context(request: Request, call_next):
     host = request.headers.get("host", "")
     
-    # Aquí ocurre la magia
-    if "notificado.pro" in host:
+    # LÓGICA DE CAMUFLAJE
+    if "duilio.store" in host: 
+        # Forzamos que este dominio sea SIEMPRE el Colegio de Contadores
+        # (Aunque en la BD el colegio tenga otro slug, aquí lo forzamos visualmente)
+        request.state.theme = {
+            "site_name": "CCP Loreto Digital",
+            "primary_color": "#1e3a8a", # Azul Institucional
+            "logo_icon": "ph-books",
+            "tone": "formal",
+            "hero_text": "Gestión del Agremiado"
+        }
+    elif "notificado.pro" in host: 
         request.state.theme = THEMES["notificado"]
-    elif "leavisamos.pro" in host:
-        request.state.theme = THEMES["leavisamos"]
     else:
-        request.state.theme = THEMES["default"]
+        request.state.theme = THEMES["leavisamos"] # Default para condominios
     
-    response = await call_next(request)
-    return response
+    return await call_next(request)
 
 # --- RUTAS ---
 app.include_router(auth.router)
@@ -37,6 +44,9 @@ app.include_router(api.router)
 app.include_router(admin.router)
 app.include_router(security.router)
 app.include_router(pets.router)
+app.include_router(finance.router)
+app.include_router(services.router)
+app.include_router(partners.router)
 
 @app.get("/service-worker.js")
 async def get_service_worker():
@@ -53,3 +63,15 @@ async def home(request: Request):
         "request": request,
         "theme": request.state.theme # <--- IMPORTANTE
     })
+
+@app.get("/")
+async def home(request: Request):
+    # Verificar si hay cookie de sesión válida
+    token = request.cookies.get("access_token")
+    if token:
+        # (Aquí iría tu lógica de validación de token)
+        # Si es válido, redirige al dashboard
+        return RedirectResponse(url="/dashboard")
+    
+    # Si no, muestra la Landing Page de Venta
+    return templates.TemplateResponse("landing/index.html", {"request": request})

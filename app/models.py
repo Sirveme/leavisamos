@@ -24,7 +24,7 @@ class Organization(Base):
     __tablename__ = "organizations"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    slug = Column(String, unique=True, index=True)
+    slug = Column(String, unique=True)
     type = Column(String) # condominio, colegio, club, municipio
     
     # CONFIGURACIÓN DEL PLAN (Ventas)
@@ -42,30 +42,25 @@ class Member(Base):
     __tablename__ = "members"
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
     
-    public_id = Column(String, index=True) # DNI, CIP, Suministro
-    access_code = Column(String) # Hash de contraseña
+    # Datos específicos de la Membresía (No de la persona)
+    unit_info = Column(String) # "Torre A - 501"
+    role = Column(String, default="user") # admin, staff, user
+    position = Column(String) # "Propietario", "Inquilino"
     
-    name = Column(String)
-    unit_info = Column(String) # Dpto 301, Sede Norte, etc.
-    email = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
-    
-    # Jerarquía
-    role = Column(String, default="user", index=True) # admin, staff, user, external
-    position = Column(String) # "Decano", "Portero", "Padre de Familia"
-
-    # Permisos Granulares (JSON)
-    # Ej: { "can_view_finance": true, "can_edit_tickets": false }
     permissions = Column(JSON, default={})
-    
-    is_active = Column(Boolean, default=True) # Para bloquear morosos si se desea
-    created_at = Column(DateTime(timezone=True), server_default=func.now()) # Vital para estadísticas: "Nuevos socios por mes"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # Relaciones
+    user = relationship("User", back_populates="memberships")
     organization = relationship("Organization", back_populates="members")
+    
     devices = relationship("Device", back_populates="member")
-    bookings = relationship("Booking", back_populates="member")
     tickets = relationship("Ticket", back_populates="member")
+    bookings = relationship("Booking", back_populates="member")
+    # pets y debts también apuntan aquí
 
 class Device(Base):
     __tablename__ = "devices"
@@ -87,6 +82,9 @@ class Device(Base):
     last_seen = Column(DateTime(timezone=True), server_default=func.now())
     
     member = relationship("Member", back_populates="devices")
+
+    permission_status = Column(String, default="unknown") 
+    app_version = Column(String) # Para saber si tienen la app vieja
 
 # --- MÓDULO SEGURIDAD (Pánico & Accesos) ---
 class PanicLog(Base):
@@ -335,6 +333,7 @@ class Reaction(Base):
     target_type = Column(String) # 'pet'
     target_id = Column(Integer)
     reaction_type = Column(String) # 'like'
+    
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -346,3 +345,94 @@ class Comment(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     member = relationship("Member") # Para saber quién comentó
+
+
+# NUEVA TABLA: La Persona Real
+# --- NIVEL 1: IDENTIDAD GLOBAL (La Persona) ---
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Credenciales Únicas (Para entrar al sistema)
+    public_id = Column(String, unique=True, index=True) # DNI
+    access_code = Column(String) # Hash del Password
+    
+    name = Column(String) # Nombre Real (Juan Pérez)
+    email = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    photo_url = Column(String, nullable=True) # Foto de perfil global
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relación: Un usuario puede ser miembro de muchos lugares
+    memberships = relationship("Member", back_populates="user")
+
+
+# --- MÓDULO FINANZAS AVANZADO ---
+
+class Payment(Base):
+
+    __tablename__ = "payments"
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    member_id = Column(Integer, ForeignKey("members.id"))
+    
+    # Detalle del Pago
+    amount = Column(Float)
+    currency = Column(String, default="PEN") # PEN, USD
+    
+    payment_method = Column(String) # Yape, Plin, Transferencia, Efectivo
+    operation_code = Column(String, nullable=True) # Nro de Operación del banco
+    voucher_url = Column(String, nullable=True) # Foto
+    
+    # Estado del Pago
+    status = Column(String, default="review") # review (esperando a Julieth), approved, rejected
+
+    rejection_reason = Column(Text, nullable=True)
+    
+    # Relación con Deuda (Opcional: puede ser pago adelantado sin deuda específica)
+    related_debt_id = Column(Integer, ForeignKey("debts.id"), nullable=True)
+    
+    notes = Column(Text, nullable=True) # "Pago de Enero y Febrero"
+    
+    reviewed_by = Column(Integer, ForeignKey("members.id"), nullable=True) # Quién aprobó (Auditoría)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    member = relationship("Member", foreign_keys=[member_id])
+    organization = relationship("Organization")
+
+
+class Partner(Base):
+    __tablename__ = "partners"
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
+    
+    name = Column(String)
+    category = Column(String)
+    description = Column(Text)
+    
+    logo_url = Column(String)
+    cover_url = Column(String)
+    
+    phone = Column(String)
+    whatsapp = Column(String)
+    website_url = Column(String)
+    
+    is_verified = Column(Boolean, default=False)
+    is_promoted = Column(Boolean, default=False)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    
+    action_type = Column(String)
+    command_text = Column(Text)
+    ai_response = Column(JSON)
+    status = Column(String)
+    ip_address = Column(String)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
