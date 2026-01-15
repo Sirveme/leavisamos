@@ -16,11 +16,11 @@ from app.routers.dashboard import get_current_member
 from app.routers.ws import manager 
 
 load_dotenv(override=True)
-print ("🔑 Cargando OPENAI_API_KEY..."+ os.getenv("OPENAI_API_KEY"))
+#print ("🔑 Cargando OPENAI_API_KEY..."+ os.getenv("OPENAI_API_KEY"))
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-print ("🔑 Cargando clave API en finance.py..."+ api_key)
+#print ("🔑 Cargando clave API en finance.py..."+ api_key)
 
 router = APIRouter(tags=["finance"])
 templates = Jinja2Templates(directory="app/templates")
@@ -354,7 +354,7 @@ async def analyze_voucher(
     base64_image = base64.b64encode(contents).decode('utf-8')
 
     # USAR LA CLAVE DIRECTA
-    print("🔑 Cargando clave API..."+ os.getenv("OPENAI_API_KEY"))
+    #print("🔑 Cargando clave API..."+ os.getenv("OPENAI_API_KEY"))
     
     print("🔑 Clave API cargada." + api_key)
 
@@ -405,8 +405,8 @@ async def analyze_voucher(
         content = response.choices[0].message.content.replace("```json", "").replace("```", "")
         data = json.loads(content)
 
-        print("🔑 Cargando clave API xxxx..."+ os.getenv("OPENAI_API_KEY"))
-        print("🔑 Clave API cargada.xxxxx" + api_key)
+        #print("🔑 Cargando clave API xxxx..."+ os.getenv("OPENAI_API_KEY"))
+        #print("🔑 Clave API cargada.xxxxx" + api_key)
 
         return {"status": "ok", "data": data}
 
