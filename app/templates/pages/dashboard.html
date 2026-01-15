@@ -11,32 +11,126 @@
 <div class="fade-me-in pb-20"> <!-- Padding bottom para que el contenido no quede tapado por botones -->
     
     <!-- Cabecera -->
-    <header class="header-section flex justify-between items-start">
-        <div class="user-welcome">
-            <h2 class="text-xl font-bold text-white">Hola, {{ user.name.split(' ')[0] }}</h2>
+    <!-- Cabecera con Selector de Propiedad -->
+    <header class="header-section flex justify-between items-start mb-6">
+        <div class="user-welcome relative group cursor-pointer">
+            
+            <!-- Título Principal (Click para ver menú) -->
+            <div class="flex items-center gap-2">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    Hola, {{ user.user.name }}
+                    {% if profiles|length > 1 %}
+                        <i class="ph ph-caret-down text-sm text-slate-400"></i>
+                    {% endif %}
+                </h2>
+            </div>
+            
+            <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">
+                {{ user.organization.name }}
+            </p>
+            
             <div class="flex items-center gap-2 mt-1">
-                <!-- Indicador de Estado -->
-                <span id="connection-status" class="flex items-center gap-1 text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full transition-colors duration-300">
-                    <span class="w-2 h-2 rounded-full bg-slate-500"></span> Conectando...
+                <span id="connection-status" class="flex items-center gap-1 text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> ...
                 </span>
                 <span class="text-xs text-slate-500">{{ user.unit_info }}</span>
             </div>
+
+            <!-- MENÚ DESPLEGABLE DE PERFILES (Solo si tiene > 1) -->
+            {% if profiles|length > 1 %}
+            <div class="absolute top-full left-0 mt-0 pt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden hidden group-hover:block z-50">
+                <div class="p-2 text-[10px] uppercase text-slate-500 font-bold bg-black/20">Cambiar Perfil</div>
+                {% for p in profiles %}
+                    <a href="/auth/switch/{{ p.id }}" 
+                       class="block px-4 py-3 text-sm hover:bg-slate-800 border-b border-slate-800 last:border-0 flex justify-between items-center {{ 'bg-indigo-900/20 text-indigo-300' if p.id == user.id else 'text-slate-300' }}">
+                        <div>
+                            <div class="font-bold">{{ p.organization.name }}</div>
+                            <div class="text-[10px] opacity-70">{{ p.unit_info }} - {{ p.position }}</div>
+                        </div>
+                        {% if p.id == user.id %}<i class="ph ph-check text-indigo-400"></i>{% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
         </div>
         
-        <button class="logout-btn text-red-400 hover:text-red-300 transition-colors" title="Salir">
+        <button class="logout-btn text-red-400 hover:text-red-300 transition-colors p-2" title="Salir">
             <i class="ph ph-sign-out text-2xl"></i>
         </button>
     </header>
 
-    <!-- Tarjeta de Deuda (Carga diferida para no bloquear la página) -->
-    <div hx-get="/finance/my-summary" 
-         hx-trigger="load" 
-         hx-swap="outerHTML"
-         class="animate-pulse bg-slate-800 h-48 rounded-2xl mb-6">
+    <!-- PIZARRA DE AVISOS (Chips) -->
+    <!-- PIZARRA DE AVISOS (Chips) -->
+    <div id="bulletin-board" class="flex gap-3 overflow-x-auto pb-4 mb-2 scrollbar-hide px-1">
+        
+        {% if latest_bulletin %}
+        <!-- GLOBO: Usamos data-attributes para evitar errores de sintaxis -->
+        <div onclick="verDetalleBoletin(this)"
+             data-title="{{ latest_bulletin.title }}"
+             data-content="{{ latest_bulletin.content }}" 
+             data-priority="{{ latest_bulletin.priority }}"
+             data-date="{{ latest_bulletin.created_at }}"
+             class="shrink-0 flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer shadow-lg transition-transform active:scale-95 border-l-4
+             {% if latest_bulletin.priority == 'alert' %}bg-red-900/40 border-red-500 text-red-100
+             {% elif latest_bulletin.priority == 'warning' %}bg-yellow-900/40 border-yellow-500 text-yellow-100
+             {% else %}bg-indigo-900/40 border-indigo-500 text-indigo-100{% endif %}">
+            
+            <div class="bg-black/20 p-2 rounded-full">
+                {% if latest_bulletin.priority == 'alert' %}<i class="ph ph-warning-octagon text-xl"></i>
+                {% elif latest_bulletin.priority == 'warning' %}<i class="ph ph-warning text-xl"></i>
+                {% else %}<i class="ph ph-info text-xl"></i>{% endif %}
+            </div>
+            
+            <div>
+                <p class="font-bold text-sm leading-none mb-1">{{ latest_bulletin.title }}</p>
+                <p class="text-[10px] opacity-70 uppercase tracking-wide">Toca para leer</p>
+            </div>
+        </div>
+        {% endif %}
+        
     </div>
+
+    
+    <!-- Tarjeta de Deuda (Carga diferida para no bloquear la página) -->
+    <!-- TARJETA DE DEUDA (CONTENEDOR PERMANENTE) -->
+    <!-- Este div nunca desaparece, HTMX cambia lo de adentro (innerHTML) -->
+    <div id="finance-card-wrapper" 
+         hx-get="/finance/my-summary" 
+         hx-trigger="load, update_debt from:body" 
+         hx-swap="innerHTML">
+         
+         <!-- Esqueleto de carga (Se ve mientras llega el dato) -->
+         <div class="animate-pulse bg-slate-800 h-48 rounded-2xl mb-6 border border-slate-700"></div>
+    </div>
+
+    <!-- ACCESO RÁPIDO AL CARNET -->
+<div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden group cursor-pointer border border-blue-500/30" onclick="alert('Aquí se abriría el Carnet Digital con QR para ingreso a eventos.')">
+    
+    <div class="absolute right-0 top-0 p-4 opacity-20">
+        <i class="ph ph-identification-card text-9xl"></i>
+    </div>
+    
+    <div class="relative z-10">
+        <p class="text-xs uppercase tracking-widest text-blue-200 mb-1">Membresía Digital</p>
+        <h3 class="text-2xl font-bold">{{ user.user.name }}</h3>
+        <p class="font-mono text-sm opacity-80 mt-1">{{ user.unit_info }}</p> <!-- Matrícula -->
+        
+        <div class="mt-4 inline-flex items-center gap-2 bg-green-500/20 border border-green-400 text-green-300 px-3 py-1 rounded-full text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+            MIEMBRO HÁBIL
+        </div>
+    </div>
+</div>
 
     <!-- Menú de Acciones -->
     <section class="menu-grid">
+        <!-- Botón Servicios -->
+        <a href="/services" class="menu-item block text-decoration-none">
+            <i class="ph ph-storefront menu-icon text-indigo-400"></i>
+            <span class="menu-title">Directorio</span>
+        </a>
+
         <!-- Botón Historial -->
         <div class="menu-item">
             <i class="ph ph-receipt menu-icon"></i>
@@ -77,47 +171,39 @@
 
 <!-- --- ELEMENTOS FLOTANTES (CAPA SUPERIOR) --- -->
 
-<!-- 1. CINTA DE NOTICIAS (Z-50) -->
-<div id="news-ticker" 
-    class="ticker-wrap" 
-    onclick="verUltimoBoletin()" 
-    style="display: none; bottom: 0; z-index: 50;"
-    data-initial-title="{{ latest_bulletin.title if latest_bulletin else '' }}"
-    data-initial-priority="{{ latest_bulletin.priority if latest_bulletin else '' }}">
-    <div id="ticker-text" class="ticker-content"></div>
-</div>
-
 <!-- 2. BOTONES DE ACCIÓN (Z-40) -->
-<!-- DOCK DE ACCIONES (Centrado abajo) -->
-<!-- DOCK DE ACCIONES (Barra inferior central) -->
-<div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 flex items-end gap-4 p-2 bg-black/20 backdrop-blur-sm rounded-full border border-white/10">
+<!-- DOCK DE COMANDO (Barra Inferior Unificada) -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-2 rounded-full shadow-2xl">
     
-    <!-- Botón Llegada (Amarillo) -->
+    <!-- 1. LLEGADA (Amarillo) -->
     <button id="btn-llegando" 
-            class="w-12 h-12 bg-yellow-500 rounded-full shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform border-2 border-slate-800"
-            title="Avisar llegada">
+            class="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black border border-yellow-500/30 flex items-center justify-center transition-all active:scale-90"
+            title="Avisar Llegada">
         <i class="ph ph-person-simple-walk text-xl"></i>
     </button>
 
-    <!-- Botón Pánico (Rojo - Gigante) -->
+    <!-- 2. PÁNICO (Rojo - Central y Grande) -->
     <button id="btn-panico" 
-            class="w-16 h-16 bg-red-600 rounded-full shadow-2xl flex items-center justify-center text-white border-4 border-slate-900 active:scale-95 transition-transform relative -top-4 overflow-hidden group">
-        <div class="absolute inset-0 bg-red-500 animate-ping opacity-20 group-hover:opacity-40"></div>
+            class="w-16 h-16 rounded-full bg-red-600 text-white shadow-lg shadow-red-900/50 flex items-center justify-center border-4 border-slate-900 -mt-8 hover:scale-105 active:scale-95 transition-transform relative group overflow-hidden">
+        <div class="absolute inset-0 bg-white/20 animate-ping opacity-0 group-hover:opacity-100"></div>
         <i class="ph ph-siren text-3xl relative z-10"></i>
     </button>
 
-    <!-- Botón Micrófono (Azul - Futuro) -->
-    <button onclick="activarNeural()" 
-            class="w-12 h-12 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform border-2 border-slate-800">
-        <i class="ph ph-microphone text-xl"></i>
+    <!-- 3. IA (Orbe Integrado) -->
+    <!-- Nota: Eliminamos el botón flotante de base.html para usar este -->
+    <button onclick="window.Neural.toggleListen()" 
+            id="dock-mic"
+            class="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 flex items-center justify-center transition-all active:scale-90 relative">
+        <div id="mic-pulse" class="absolute inset-0 rounded-full bg-indigo-500 opacity-0"></div>
+        <i class="ph ph-microphone text-xl relative z-10"></i>
     </button>
 
 </div>
 
-<!-- Botón Check-in (Verde - Oculto por defecto) -->
-<div id="btn-checkin-container" class="hidden fixed bottom-32 left-1/2 transform -translate-x-1/2 z-40 animate-bounce">
-    <button id="btn-checkin" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-xl border-2 border-white flex items-center gap-2">
-        <i class="ph ph-map-pin-check text-xl"></i> CONFIRMAR INGRESO
+<!-- Botón Check-in (Verde - Flotante arriba del Dock) -->
+<div id="btn-checkin-container" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40 animate-bounce">
+    <button id="btn-checkin" class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold shadow-lg border-2 border-green-400 flex items-center gap-2 text-sm">
+        <i class="ph ph-map-pin-check text-lg"></i> CONFIRMAR INGRESO
     </button>
 </div>
 
@@ -172,6 +258,7 @@
     </div>
 </div>
 
+
 <!-- Animación simple CSS -->
 <style>
     @keyframes pulse {
@@ -193,7 +280,8 @@
         wsUrl: (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/ws/alerta'
     };
 </script>
-
+<!-- Anular el micrófono flotante global porque aquí usamos el del Dock -->
+{% block mic_floating %}{% endblock %}
 <!-- Cargar Script Externo -->
 <script src="/static/js/pages/dashboard.js"></script>
 

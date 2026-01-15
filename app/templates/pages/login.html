@@ -17,7 +17,7 @@
     </div>
 
     <!-- El formulario usa HTMX para enviar al backend que acabamos de crear -->
-    <form class="login-form" hx-post="/auth/login" hx-target="#content-area" hx-swap="innerHTML">
+    <form class="login-form" action="/auth/login" method="post">
         
         <div class="form-group">
             <label>Identificación</label>
