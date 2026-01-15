@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Member
+from app.models import Member, Bulletin, Organization
 from jose import jwt, JWTError
 from app.config import SECRET_KEY # Asegúrate que esto exista en config.py
 from app.utils.security import ALGORITHM
@@ -43,15 +43,26 @@ def get_current_member(access_token: str = Cookie(None), db: Session = Depends(g
     return member
 
 @router.get("/dashboard")
-async def dashboard_home(request: Request, member: Member = Depends(get_current_member)):
+async def dashboard_home(request: Request, member: Member = Depends(get_current_member), db: Session = Depends(get_db)):
     current_theme = getattr(request.state, "theme", None)
+
+    # BUSCAR ÚLTIMO BOLETÍN ACTIVO (Menos de 24h o no expirado)
+    latest_bulletin = db.query(Bulletin).order_by(Bulletin.created_at.desc()).first()
+
+    # BUSCAR OTRAS MEMBRESÍAS DEL MISMO USUARIO
+    my_profiles = db.query(Member).join(Organization).filter(
+        Member.user_id == member.user_id,
+        Member.is_active == True
+    ).all()
     
     return templates.TemplateResponse("pages/dashboard.html", {
         "request": request,
         "user": member,
+        "profiles": my_profiles,
         "deuda": "S/ 150.00",
         "vencimiento": "15 Ene 2024",
         "theme": current_theme,
         # AGREGAMOS ESTO:
-        "vapid_public_key": os.getenv("VAPID_PUBLIC_KEY") 
+        "vapid_public_key": os.getenv("VAPID_PUBLIC_KEY"),
+        "latest_bulletin": latest_bulletin 
     })

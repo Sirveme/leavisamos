@@ -1,17 +1,22 @@
 # app/routers/api.py
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Body, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Device, Member, AccessLog, MemberRole, PanicLog
+from app.models import Device, Member, AccessLog, MemberRole, PanicLog, Debt, Payment, Bulletin, AuditLog, User
 from app.routers.dashboard import get_current_member
+from app.core.actions import get_allowed_actions, get_action_ui
 from openai import OpenAI
 from datetime import datetime, timedelta, timezone
+from pywebpush import webpush
 import os
 import json
 
 from sqlalchemy import func
 
 from app.routers.ws import manager # Para avisar al websocket
+
+load_dotenv(override=True)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -88,13 +93,14 @@ async def check_in_proximity(
 
     # Avisar al Guardia (Monitor Centinela) vía WebSocket
     # Usamos un tipo nuevo "INFO_ACCESS" para que sea verde, no rojo
+    # Avisar al Guardia (Monitor Centinela) vía WebSocket
     await manager.broadcast({
         "type": "INFO_ACCESS", 
-        "user": member.name,
-        "user_id": member.id,  # <--- AGREGAR ESTO
-        "msg": f"📍 {member.name} ha marcado su ingreso.",
+        "user": member.user.name, # <--- CAMBIO AQUÍ (Agregamos .user)
+        "user_id": member.user.id, # <--- Asegúrate de usar member.user.id aquí también
+        "msg": f"📍 {member.user.name} ha marcado su ingreso (Check-in).", # <--- Y AQUÍ
         "unit": member.unit_info,
-        "method": "WiFi/App" # Para saber cómo confirmó
+        "method": "WiFi/App"
     })
     
     return {"status": "ok", "msg": "Ingreso registrado correctamente"}
@@ -104,48 +110,147 @@ async def check_in_proximity(
 # CEREBRO IA: PROCESAR COMANDO DE VOZ
 # LA CENTRAL NEURAL (Integración OpenAI) 🧠✨
 #================================================================
-@router.post("/brain/process-command")
-async def process_voice_command(payload: dict = Body(...)):
-    # payload = { "text": "Avisa corte de luz mañana a las 5", "role": "admin" }
-    command_text = payload.get("text")
-    user_role = payload.get("role")
-    
-    print(f"🧠 Cerebro procesando: {command_text}")
+# ... imports (Asegúrate de tener Bulletin, Device, webpush, etc.) ...
+from app.models import Bulletin, Device, Payment
+from pywebpush import webpush
+import json
 
-    # Prompt del Sistema (Instrucciones)
-    system_prompt = """
-    Eres el asistente IA de un condominio. Tu trabajo es interpretar comandos de voz y devolver una acción JSON estructurada.
+@router.post("/brain/process-command")
+async def process_voice_command(
+    request: Request, # Para obtener la IP
+    payload: dict = Body(...),
+    member: Member = Depends(get_current_member),
+    db: Session = Depends(get_db)
+):
+    command_text = payload.get("command")
+    print(f"🧠 Cerebro: '{command_text}' ({member.role})")
+
+    # 1. Obtener Whitelist (Acciones permitidas para este usuario)
+    allowed_actions = get_allowed_actions(member.role, member.organization.type)
     
-    ACCIONES DISPONIBLES:
-    1. Si es Admin y quiere comunicar algo:
-       Return: {"action": "fill_bulletin", "title": "...", "content": "...", "priority": "info/warning/alert"}
+    # 2. Generar descripción para el Prompt
+    if not allowed_actions:
+        return {"status": "ok", "action": {"type": "speak", "message": "No tienes permisos para ejecutar acciones."}}
+
+    actions_desc = "\n".join([f"- {key}: {val['desc']}" for key, val in allowed_actions.items()])
     
-    2. Si es Vecino/Guardia y reporta una llegada o visita:
-       Return: {"action": "log_access", "type": "visita", "name": "..."}
-       
-    3. Si es Vecino y pregunta deuda:
-       Return: {"action": "check_debt"}
-       
-    Responde SOLO el JSON.
+    # 3. Prompt del Sistema
+    system_prompt = f"""
+    Eres el SO de {member.organization.name}. Usuario: {member.user.name} ({member.role}).
+    
+    ACCIONES PERMITIDAS:
+    {actions_desc}
+    
+    INSTRUCCIONES:
+    1. Analiza la intención del usuario.
+    2. Selecciona el 'action_id' de la lista anterior.
+    3. Extrae datos relevantes en 'data' (ej: amount, title, content).
+    4. Si no entiendes o la acción no está en la lista -> "action_id": "UNKNOWN"
+    
+    Responde SOLO JSON: {{ "action_id": "...", "data": {{ ... }} }}
     """
 
+    final_action = None
+    audit_status = "ERROR"
+
     try:
+        # Llamada a OpenAI
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         completion = client.chat.completions.create(
-            model="gpt-4o-mini", # O gpt-3.5-turbo
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Rol: {user_role}. Comando: {command_text}"}
+                {"role": "user", "content": command_text}
             ],
-            response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.0,
+            response_format={"type": "json_object"}
         )
         
-        response_json = json.loads(completion.choices[0].message.content)
-        return {"status": "ok", "data": response_json}
+        ai_resp = json.loads(completion.choices[0].message.content)
+        action_id = ai_resp.get("action_id")
         
+        # 4. Validación y Construcción de Respuesta UI
+        if action_id == "UNKNOWN" or action_id not in allowed_actions:
+            final_action = {"type": "speak", "message": "No entendí o no tienes permiso."}
+            audit_status = "DENIED"
+        else:
+            # Recuperar configuración visual estática
+            ui_config = get_action_ui(action_id).copy()
+            
+            # Mezclar con datos dinámicos de la IA
+            ui_config["payload"] = {
+                "data": ai_resp.get("data", {}),
+                "submit": ui_config.get("submit", False)
+            }
+            
+            # Mensaje de voz por defecto si no existe
+            if "message" not in ui_config:
+                ui_config["message"] = "Procesando orden."
+                
+            final_action = ui_config
+            audit_status = "SUCCESS"
+
     except Exception as e:
-        print(f"Error OpenAI: {e}")
-        return {"status": "error", "msg": "Cerebro desconectado temporalmente"}
+        print(f"❌ Error Brain: {e}")
+        final_action = {"type": "speak", "message": "Error de conexión cerebral."}
+        audit_status = "ERROR_TECH"
+
+    # 5. AUDITORÍA (Guardar en Base de Datos)
+    try:
+        log = AuditLog(
+            organization_id=member.organization_id,
+            user_id=member.user_id,
+            action_type="VOICE_COMMAND",
+            command_text=command_text,
+            ai_response=final_action, # Guardamos lo que se ejecutó
+            status=audit_status,
+            ip_address=request.client.host
+        )
+        db.add(log)
+        db.commit()
+    except Exception as e:
+        print(f"⚠️ Fallo al auditar: {e}")
+
+    return {"status": "ok", "action": final_action}
+
+# --- PROMPTS ESPECIALIZADOS ---
+
+def get_admin_prompt(name):
+    return f"""
+    Eres el asistente ejecutivo de {name}.
+    Tu objetivo: Ejecutar acciones administrativas RÁPIDAS.
+    
+    ACCIONES:
+    1. COMUNICADOS:
+       - Si dice "Redacta..." o "Prepara...": Llena el form pero NO envía. ("submit": false)
+       - Si dice "Envía..." o "Comunica...": Llena el form Y LO ENVÍA. ("submit": true)
+       JSON: {{ "type": "fill_form", "target": "form-boletin", "payload": {{ "data": {{ "title": "...", "content": "...", "priority": "info" }}, "submit": true }}, "message": "Enviando comunicado." }}
+
+    2. FINANZAS:
+       - "Generar cuotas": {{ "type": "click", "target": "btn-generar-cuotas", "message": "Generando cobros." }}
+    """
+
+def get_security_prompt(name):
+    return f"""
+    Eres el asistente de seguridad {name}.
+    Tu prioridad: Velocidad y Registro.
+    
+    ACCIONES:
+    1. REGISTRO VISITA/INGRESO:
+       - Extrae el nombre y la unidad.
+       - JSON: {{ "type": "api_call", "endpoint": "/centinela/log", "data": {{ "tipo": "VISITA", "detalle": "NOMBRE_DETECTADO", "unidad": "UNIDAD_DETECTADA" }}, "message": "Visita registrada." }}
+       
+    2. ALERTA ROJA:
+       - JSON: {{ "type": "click", "target": "btn-panico-centinela", "message": "Activando alerta." }}
+    """
+
+def get_neighbor_prompt(name):
+    return f"""
+    Eres el asistente del vecino {name}.
+    ACCIONES:
+    1. PAGOS: {{ "type": "open_modal", "target": "modal-payment", "message": "Abriendo pagos." }}
+    2. PÁNICO: {{ "type": "click", "target": "btn-panico", "message": "Alerta activada." }}
+    """
     
 
 #================================================================
@@ -205,3 +310,30 @@ async def get_security_briefing(
     except Exception as e:
         print(f"Error IA: {e}")
         return {"status": "ok", "text": f"Resumen manual: {len(panics)} alertas y {len(access)} ingresos recientes."}
+    
+
+@router.post("/health/report")
+async def report_health(
+    payload: dict = Body(...),
+    member: Member = Depends(get_current_member),
+    db: Session = Depends(get_db)
+):
+    # payload = { online: true, permission: 'granted', ... }
+    
+    # 1. Buscar el dispositivo actual del usuario (basado en user_agent aproximado o sesión)
+    # Por simplicidad, actualizamos el último dispositivo activo o todos los de este usuario
+    # Idealmente, el frontend debería mandar un device_id si lo tuviera guardado.
+    
+    devices = db.query(Device).filter(Device.member_id == member.id).all()
+    
+    status_perm = payload.get("permission", "unknown")
+    
+    # Actualizamos el estado de permiso en la BD
+    for dev in devices:
+        dev.permission_status = status_perm
+        dev.last_seen = func.now()
+        dev.is_active = (status_perm == 'granted')
+    
+    db.commit()
+    
+    return {"status": "received"}
