@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, RedirectResponse
 from .database import engine, Base
-from .routers import auth, dashboard, ws, api, admin, security, pets, finance, services, partners
+from .routers import auth, dashboard, ws, api, admin, security, pets, finance, services, partners, directory
 from .config import THEMES
 
 # Base.metadata.create_all(bind=engine) # Descomentar solo si usas SQLite local
@@ -47,6 +47,7 @@ app.include_router(pets.router)
 app.include_router(finance.router)
 app.include_router(services.router)
 app.include_router(partners.router)
+app.include_router(directory.router)
 
 @app.get("/service-worker.js")
 async def get_service_worker():
@@ -75,3 +76,13 @@ async def home(request: Request):
     
     # Si no, muestra la Landing Page de Venta
     return templates.TemplateResponse("landing/index.html", {"request": request})
+
+
+@app.get("/resumen")
+async def resumen(request: Request):
+    # Verificar si hay cookie de sesión válida
+    return templates.TemplateResponse("landing/resumen.html", {"request": request})
+
+@app.get("/demo/ads")
+async def demo_ads(request: Request):
+    return templates.TemplateResponse("landing/demo_ads.html", {"request": request})
