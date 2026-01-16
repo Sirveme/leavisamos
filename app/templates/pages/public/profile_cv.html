@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile.user.name }} - Contador Público</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+    <!-- Banner Superior -->
+    <div class="h-48 bg-gradient-to-r from-blue-900 to-indigo-800 w-full relative">
+        <div class="absolute bottom-4 right-6 text-white/50 text-xs font-bold tracking-widest uppercase">
+            Miembro Oficial {{ profile.organization.name }}
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-3xl mx-auto px-6 -mt-20 relative z-10">
+        
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            
+            <!-- Cabecera Perfil -->
+            <div class="p-8 flex flex-col md:flex-row gap-8 items-center md:items-end">
+                <!-- Foto -->
+                <div class="w-40 h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-200 shrink-0">
+                    <img src="https://ui-avatars.com/api/?name={{ profile.user.name }}&size=256&background=random" class="w-full h-full object-cover">
+                </div>
+                
+                <!-- Datos -->
+                <div class="text-center md:text-left flex-1">
+                    <h1 class="text-3xl font-extrabold text-slate-900">{{ profile.user.name }}</h1>
+                    <p class="text-indigo-600 font-bold text-lg mb-2">{{ profile.position }}</p> <!-- Especialidad -->
+                    
+                    <!-- Insignia de Estado -->
+                    {% if profile.is_active %}
+                    <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
+                        <i class="ph ph-seal-check-fill text-lg"></i> HABILITADO 2026
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200">
+                        🚫 NO HABILITADO
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="p-8 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Columna Izquierda: Contacto -->
+                <div class="md:col-span-1 space-y-4">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-400 uppercase font-bold mb-2">Matrícula</p>
+                        <p class="font-mono text-lg font-bold">{{ profile.public_id }}</p>
+                    </div>
+
+                    {% if profile.is_active %}
+                    <a href="https://wa.me/?text=Hola%20Contador,%20vi%20su%20perfil%20digital" class="block w-full bg-green-600 hover:bg-green-500 text-white text-center py-3 rounded-xl font-bold transition-transform active:scale-95 shadow-lg shadow-green-900/20">
+                        <i class="ph ph-whatsapp-logo text-xl align-middle mr-1"></i> Contactar
+                    </a>
+                    <button class="block w-full bg-indigo-600 hover:bg-indigo-500 text-white text-center py-3 rounded-xl font-bold transition-transform active:scale-95 shadow-lg shadow-indigo-900/20">
+                        <i class="ph ph-envelope text-xl align-middle mr-1"></i> Escribir
+                    </button>
+                    {% else %}
+                    <div class="bg-red-50 text-red-600 p-4 rounded-xl text-xs text-center border border-red-200">
+                        Las funciones de contacto están deshabilitadas temporalmente.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Columna Derecha: Bio / Servicios -->
+                <div class="md:col-span-2 space-y-6">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
+                            <i class="ph ph-user-circle"></i> Perfil Profesional
+                        </h3>
+                        <p class="text-slate-600 leading-relaxed">
+                            {{ profile.permissions.get('bio') or "Contador Público Colegiado comprometido con la excelencia y la ética profesional. Especialista en asesoría contable, tributaria y laboral para empresas y personas naturales." }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg mb-2 flex items-center gap-2">
+                            <i class="ph ph-briefcase"></i> Servicios
+                        </h3>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1 ml-1">
+                            <li>Declaración de Impuestos Mensual y Anual.</li>
+                            <li>Constitución de Empresas.</li>
+                            <li>Auditoría Financiera.</li>
+                            <li>Asesoría Laboral (Planillas).</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-slate-50 p-4 text-center text-[10px] text-slate-400 border-t border-slate-200">
+                Perfil validado por el Colegio de Contadores Públicos de Loreto • Powered by LeAvisamos.pro
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
