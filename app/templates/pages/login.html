@@ -13,7 +13,7 @@
             {% if theme.logo %}
                 <img src="{{ theme.logo }}" class="w-12 h-12 object-contain">
             {% else %}
-                <i class="ph {{ theme.logo_icon or 'ph-buildings' }} text-4xl" style="color: {{ theme.primary_color }}"></i>
+                <i class="ph {{ theme.logo_icon or 'ph-buildings' }} text-4xl focus:border-primary focus:ring-1 focus:ring-primary"></i>
             {% endif %}
         </div>
         <h1 class="text-2xl font-bold text-white mb-2">Bienvenido</h1>
@@ -36,7 +36,7 @@
             <div class="relative">
                 <i class="ph ph-identification-card absolute left-4 top-3.5 text-slate-500 text-lg"></i>
                 <input type="text" name="dni" placeholder="DNI / Matrícula" required 
-                       class="w-full bg-slate-900 border border-slate-700 text-white pl-12 pr-4 py-3 rounded-xl focus:border-[{{ theme.primary_color }}] focus:ring-1 focus:ring-[{{ theme.primary_color }}] outline-none transition-all">
+                       class="w-full bg-slate-900 border border-slate-700 text-white pl-12 pr-4 py-3 rounded-xl focus:border-primary focus:ring-1 focus:ring-[{{ theme.primary_color }}] outline-none transition-all">
             </div>
         </div>
 
@@ -45,7 +45,7 @@
             <div class="relative">
                 <i class="ph ph-lock-key absolute left-4 top-3.5 text-slate-500 text-lg"></i>
                 <input type="password" id="password-input" name="code" placeholder="Código de Acceso" required 
-                       class="w-full bg-slate-900 border border-slate-700 text-white pl-12 pr-12 py-3 rounded-xl focus:border-[{{ theme.primary_color }}] focus:ring-1 focus:ring-[{{ theme.primary_color }}] outline-none transition-all">
+                       class="w-full bg-slate-900 border border-slate-700 text-white pl-12 pr-12 py-3 rounded-xl focus:border-primary focus:ring-1 focus:ring-[{{ theme.primary_color }}] outline-none transition-all">
                 
                 <button type="button" id="toggle-password-btn" class="absolute right-4 top-3 text-slate-500 hover:text-white">
                     <i class="ph ph-eye text-lg"></i>
@@ -54,8 +54,7 @@
         </div>
 
         <button type="submit" 
-                class="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
-                style="background-color: {{ theme.primary_color }}">
+                class="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark">
             <span>INGRESAR</span>
             <i class="ph ph-arrow-right"></i>
         </button>
