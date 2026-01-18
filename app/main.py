@@ -1,4 +1,5 @@
 import json
+import os
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -104,16 +105,46 @@ async def get_manifest():
 
 @app.get("/")
 async def home(request: Request):
-    # Si hay cookie, ir al dashboard
+    # 1. Si ya está logueado, ir al Dashboard
     token = request.cookies.get("access_token")
     if token:
         return RedirectResponse(url="/dashboard")
     
-    # Si no hay Org identificada, mostrar Landing de Venta
-    if not getattr(request.state, "org", None):
-        return templates.TemplateResponse("landing/resumen.html", {"request": request})
+    # 2. Obtener datos de la organización actual (del Middleware)
+    current_org = getattr(request.state, "org", None)
+    
+    if current_org:
+        # 3. BUSCAR PORTAL PERSONALIZADO
+        # Buscamos si existe un archivo con el slug de la org (ej: "ccp-loreto.html")
+        slug = current_org['slug']
+        template_path = f"sites/{slug}.html"
+        full_path = os.path.join("app", "templates", "sites", f"{slug}.html")
+        
+        if os.path.exists(full_path):
+            # ¡BINGO! El cliente tiene página propia
+            return templates.TemplateResponse(template_path, {
+                "request": request,
+                "org": current_org,
+                "theme": request.state.theme
+            })
+        
+        # 4. Si no tiene portal, mostrar LOGIN directo con su branding
+        return templates.TemplateResponse("pages/login.html", {
+            "request": request,
+            "theme": request.state.theme
+        })
 
-    # Si hay Org, mostrar Login con su marca
+    # 5. Si no hay organización (Dominio desconocido o principal), mostrar LANDING DE VENTA
+    return templates.TemplateResponse("landing/resumen.html", {"request": request})
+
+
+# RUTA EXPLÍCITA PARA EL LOGIN (Para enlazar desde el Portal)
+@app.get("/login")
+async def login_page(request: Request):
+    # Si ya está logueado, al dashboard
+    if request.cookies.get("access_token"):
+        return RedirectResponse(url="/dashboard")
+
     return templates.TemplateResponse("pages/login.html", {
         "request": request,
         "theme": request.state.theme
