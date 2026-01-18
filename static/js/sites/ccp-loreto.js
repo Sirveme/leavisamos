@@ -1,6 +1,7 @@
 /**
  * CCPL - Colegio de Contadores Públicos de Loreto
- * Amazon Rainforest Effect: Hojas + Luciérnagas
+ * Amazon Rainforest Effect: Day/Night Cycle System
+ * Hojas + Luciérnagas + Mariposas Morpho
  * Inspired by Iquitos, Loreto - Amazonía Peruana
  */
 
@@ -8,16 +9,162 @@
     'use strict';
 
     /* ==========================================
-       AMAZON RAINFOREST ANIMATION
+       DAY/NIGHT CYCLE SYSTEM
+       ========================================== */
+    class DayNightCycle {
+        constructor() {
+            this.currentPeriod = this.getCurrentPeriod();
+            this.transitionProgress = 0;
+            this.isTransitioning = false;
+            
+            this.init();
+        }
+
+        getCurrentPeriod() {
+            const hour = new Date().getHours();
+            
+            if (hour >= 5 && hour < 7) return 'dawn';      // 5am-7am
+            if (hour >= 7 && hour < 17) return 'day';      // 7am-5pm
+            if (hour >= 17 && hour < 19) return 'dusk';    // 5pm-7pm
+            return 'night';                                  // 7pm-5am
+        }
+
+        getPeriodConfig(period) {
+            const configs = {
+                dawn: {
+                    background: {
+                        colors: ['rgba(26, 77, 46, 0.75)', 'rgba(255, 152, 0, 0.4)', 'rgba(108, 92, 231, 0.6)'],
+                        description: 'Verde selva → Naranja amanecer → Púrpura'
+                    },
+                    leaves: {
+                        count: { desktop: 15, mobile: 10 },
+                        colors: ['#1a4d2e', '#2ecc71', '#ff9800', '#6c5ce7'],
+                        opacity: [0.6, 0.8],
+                        speed: 0.4
+                    },
+                    fireflies: {
+                        count: { desktop: 8, mobile: 5 },
+                        brightness: 0.5,
+                        active: true
+                    },
+                    butterflies: {
+                        count: { desktop: 2, mobile: 1 },
+                        active: true
+                    }
+                },
+                day: {
+                    background: {
+                        colors: ['rgba(13, 59, 33, 0.85)', 'rgba(30, 90, 61, 0.75)', 'rgba(42, 77, 124, 0.7)'],
+                        description: 'Verde selva profundo → Verde medio → Azul amazónico'
+                    },
+                    leaves: {
+                        count: { desktop: 20, mobile: 12 },
+                        colors: ['#1a4d2e', '#2ecc71', '#7bed9f', '#6c5ce7', '#27ae60'],
+                        opacity: [0.7, 0.9],
+                        speed: 0.5
+                    },
+                    fireflies: {
+                        count: { desktop: 0, mobile: 0 },
+                        brightness: 0,
+                        active: false
+                    },
+                    butterflies: {
+                        count: { desktop: 3, mobile: 2 },
+                        active: true
+                    }
+                },
+                dusk: {
+                    background: {
+                        colors: ['rgba(42, 20, 50, 0.85)', 'rgba(255, 87, 34, 0.5)', 'rgba(108, 92, 231, 0.7)'],
+                        description: 'Morado oscuro → Naranja atardecer → Púrpura'
+                    },
+                    leaves: {
+                        count: { desktop: 15, mobile: 10 },
+                        colors: ['#6c5ce7', '#ff5722', '#8e44ad', '#2ecc71'],
+                        opacity: [0.6, 0.8],
+                        speed: 0.3
+                    },
+                    fireflies: {
+                        count: { desktop: 12, mobile: 8 },
+                        brightness: 0.7,
+                        active: true
+                    },
+                    butterflies: {
+                        count: { desktop: 1, mobile: 0 },
+                        active: true
+                    }
+                },
+                night: {
+                    background: {
+                        colors: ['rgba(10, 31, 20, 0.95)', 'rgba(26, 58, 46, 0.9)', 'rgba(52, 31, 151, 0.85)'],
+                        description: 'Casi negro verdoso → Verde oscuro → Morado profundo'
+                    },
+                    leaves: {
+                        count: { desktop: 12, mobile: 8 },
+                        colors: ['#7bed9f', '#a78bfa', '#6ee7b7', '#c084fc'],
+                        opacity: [0.5, 0.7],
+                        speed: 0.3
+                    },
+                    fireflies: {
+                        count: { desktop: 20, mobile: 12 },
+                        brightness: 1.0,
+                        active: true
+                    },
+                    butterflies: {
+                        count: { desktop: 0, mobile: 0 },
+                        active: false
+                    }
+                }
+            };
+            
+            return configs[period];
+        }
+
+        init() {
+            this.updateBackground();
+            this.checkPeriodically();
+        }
+
+        updateBackground() {
+            const config = this.getPeriodConfig(this.currentPeriod);
+            const gradient = document.querySelector('.hero-gradient');
+            
+            if (gradient) {
+                gradient.style.background = `linear-gradient(135deg, 
+                    ${config.background.colors[0]} 0%, 
+                    ${config.background.colors[1]} 50%, 
+                    ${config.background.colors[2]} 100%)`;
+            }
+        }
+
+        checkPeriodically() {
+            setInterval(() => {
+                const newPeriod = this.getCurrentPeriod();
+                if (newPeriod !== this.currentPeriod) {
+                    console.log(`Period changed: ${this.currentPeriod} → ${newPeriod}`);
+                    this.currentPeriod = newPeriod;
+                    this.updateBackground();
+                    
+                    // Notify Amazon effect to update
+                    if (window.amazonEffectInstance) {
+                        window.amazonEffectInstance.updateForPeriod(newPeriod);
+                    }
+                }
+            }, 60000); // Check every minute
+        }
+    }
+
+    /* ==========================================
+       AMAZON RAINFOREST EFFECT WITH DAY/NIGHT
        ========================================== */
     class AmazonEffect {
-        constructor(canvas) {
+        constructor(canvas, dayNightCycle) {
             this.canvas = canvas;
             this.ctx = canvas.getContext('2d', { alpha: true });
+            this.dayNightCycle = dayNightCycle;
             this.leaves = [];
             this.fireflies = [];
-            this.leafCount = this.getLeafCount();
-            this.fireflyCount = this.getFireflyCount();
+            this.butterflies = [];
             this.wind = { x: 0, strength: 0, nextGust: Date.now() + 3000 };
             this.animationId = null;
             
@@ -25,26 +172,41 @@
             this.bindEvents();
         }
 
-        getLeafCount() {
-            const width = window.innerWidth;
-            if (width > 1920) return 20;
-            if (width > 1024) return 15;
-            if (width > 768) return 12;
-            return 10;
-        }
-
-        getFireflyCount() {
-            const width = window.innerWidth;
-            if (width > 1024) return 12;
-            if (width > 768) return 8;
-            return 6;
-        }
-
         init() {
             this.resize();
-            this.createLeaves();
-            this.createFireflies();
+            this.updateForPeriod(this.dayNightCycle.currentPeriod);
             this.animate();
+        }
+
+        updateForPeriod(period) {
+            const config = this.dayNightCycle.getPeriodConfig(period);
+            const isMobile = window.innerWidth < 768;
+            
+            // Update leaves
+            const leafCount = isMobile ? config.leaves.count.mobile : config.leaves.count.desktop;
+            this.createLeaves(leafCount, config.leaves.colors, config.leaves.opacity, config.leaves.speed);
+            
+            // Update fireflies
+            if (config.fireflies.active) {
+                const fireflyCount = isMobile ? config.fireflies.count.mobile : config.fireflies.count.desktop;
+                this.createFireflies(fireflyCount, config.fireflies.brightness);
+            } else {
+                this.fireflies = [];
+            }
+            
+            // Update butterflies
+            if (config.butterflies.active) {
+                const butterflyCount = isMobile ? config.butterflies.count.mobile : config.butterflies.count.desktop;
+                this.createButterflies(butterflyCount);
+            } else {
+                this.butterflies = [];
+            }
+            
+            console.log(`Updated for ${period}:`, {
+                leaves: leafCount,
+                fireflies: config.fireflies.active ? (isMobile ? config.fireflies.count.mobile : config.fireflies.count.desktop) : 0,
+                butterflies: config.butterflies.active ? (isMobile ? config.butterflies.count.mobile : config.butterflies.count.desktop) : 0
+            });
         }
 
         resize() {
@@ -60,81 +222,88 @@
             this.ctx.scale(dpr, dpr);
         }
 
-        // Leaf shapes (organic forms)
         getLeafShape(type) {
             switch(type) {
-                case 'elongated': // Hoja alargada tipo helecho
+                case 'elongated':
                     return { width: 15, height: 30, curve: 0.6 };
-                case 'round': // Hoja redonda
+                case 'round':
                     return { width: 20, height: 20, curve: 1 };
-                case 'pointed': // Hoja puntiaguda
+                case 'pointed':
                     return { width: 18, height: 25, curve: 0.4 };
-                case 'fern': // Tipo helecho compuesto
+                case 'fern':
                     return { width: 25, height: 20, curve: 0.8, segments: 3 };
                 default:
                     return { width: 18, height: 25, curve: 0.5 };
             }
         }
 
-        // Amazon color palette
-        getLeafColor() {
-            const colors = [
-                '#1a4d2e', // Verde oscuro selva
-                '#2ecc71', // Verde esmeralda
-                '#7bed9f', // Verde lima
-                '#6c5ce7', // Púrpura amazónico
-                '#341f97', // Morado profundo
-                '#27ae60', // Verde intermedio
-                '#8e44ad', // Morado claro
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        createLeaves() {
+        createLeaves(count, colors, opacityRange, speedMultiplier) {
             const types = ['elongated', 'round', 'pointed', 'fern'];
             const width = this.canvas.width / (window.devicePixelRatio || 1);
             const height = this.canvas.height / (window.devicePixelRatio || 1);
             
             this.leaves = [];
-            for (let i = 0; i < this.leafCount; i++) {
+            for (let i = 0; i < count; i++) {
                 const type = types[Math.floor(Math.random() * types.length)];
                 const shape = this.getLeafShape(type);
+                const color = colors[Math.floor(Math.random() * colors.length)];
                 
                 this.leaves.push({
                     x: Math.random() * width,
-                    y: Math.random() * height - height, // Start above screen
+                    y: Math.random() * height - height,
                     vx: (Math.random() - 0.5) * 0.5,
-                    vy: Math.random() * 0.5 + 0.3, // Fall speed
+                    vy: (Math.random() * 0.5 + 0.3) * speedMultiplier,
                     rotation: Math.random() * Math.PI * 2,
                     rotationSpeed: (Math.random() - 0.5) * 0.02,
                     type: type,
                     shape: shape,
-                    color: this.getLeafColor(),
-                    opacity: Math.random() * 0.3 + 0.6,
-                    sway: Math.random() * 2, // Horizontal sway
+                    color: color,
+                    opacity: Math.random() * (opacityRange[1] - opacityRange[0]) + opacityRange[0],
+                    sway: Math.random() * 2,
                     swaySpeed: Math.random() * 0.02 + 0.01,
                     swayOffset: Math.random() * Math.PI * 2
                 });
             }
         }
 
-        createFireflies() {
+        createFireflies(count, baseBrightness) {
             const width = this.canvas.width / (window.devicePixelRatio || 1);
             const height = this.canvas.height / (window.devicePixelRatio || 1);
             
             this.fireflies = [];
-            for (let i = 0; i < this.fireflyCount; i++) {
+            for (let i = 0; i < count; i++) {
                 this.fireflies.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
                     vx: (Math.random() - 0.5) * 0.3,
                     vy: (Math.random() - 0.5) * 0.3,
-                    size: Math.random() * 2 + 1,
-                    brightness: Math.random(),
+                    size: Math.random() * 2 + 1.5,
+                    brightness: Math.random() * baseBrightness,
                     fadeSpeed: Math.random() * 0.02 + 0.01,
                     fadeDirection: Math.random() > 0.5 ? 1 : -1,
-                    color: Math.random() > 0.7 ? '#ffd700' : '#7bed9f', // Dorado o verde
-                    glowSize: Math.random() * 15 + 10
+                    color: Math.random() > 0.7 ? '#ffd700' : '#7bed9f',
+                    glowSize: Math.random() * 15 + 12,
+                    maxBrightness: baseBrightness
+                });
+            }
+        }
+
+        createButterflies(count) {
+            const width = this.canvas.width / (window.devicePixelRatio || 1);
+            const height = this.canvas.height / (window.devicePixelRatio || 1);
+            
+            this.butterflies = [];
+            for (let i = 0; i < count; i++) {
+                this.butterflies.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height * 0.7, // Upper portion
+                    vx: Math.random() * 1 + 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 8 + 12,
+                    wingAngle: 0,
+                    wingSpeed: Math.random() * 0.15 + 0.1,
+                    color: '#00d2ff', // Morpho blue
+                    flutter: 0
                 });
             }
         }
@@ -148,7 +317,6 @@
             const shape = leaf.shape;
             
             if (leaf.type === 'fern') {
-                // Hoja compuesta tipo helecho
                 for (let i = 0; i < shape.segments; i++) {
                     const offsetX = (i - 1) * 8;
                     this.ctx.fillStyle = leaf.color;
@@ -157,11 +325,8 @@
                     this.ctx.fill();
                 }
             } else {
-                // Hoja simple
                 this.ctx.fillStyle = leaf.color;
                 this.ctx.beginPath();
-                
-                // Forma orgánica usando curvas
                 this.ctx.moveTo(0, -shape.height / 2);
                 this.ctx.bezierCurveTo(
                     shape.width / 2, -shape.height / 2 * shape.curve,
@@ -176,8 +341,8 @@
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Nervadura central (ocasional)
-                if (Math.random() > 0.7) {
+                // Vein (nervadura)
+                if (Math.random() > 0.6) {
                     this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
                     this.ctx.lineWidth = 1;
                     this.ctx.beginPath();
@@ -191,15 +356,14 @@
         }
 
         drawFirefly(firefly) {
-            // Glow effect
             const gradient = this.ctx.createRadialGradient(
                 firefly.x, firefly.y, 0,
                 firefly.x, firefly.y, firefly.glowSize
             );
             
-            const alpha = firefly.brightness * 0.6;
-            gradient.addColorStop(0, firefly.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba'));
-            gradient.addColorStop(0.5, firefly.color.replace(')', `, ${alpha * 0.3})`).replace('rgb', 'rgba'));
+            const alpha = firefly.brightness * 0.8;
+            gradient.addColorStop(0, firefly.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba').replace('#', 'rgba('));
+            gradient.addColorStop(0.3, firefly.color.replace(')', `, ${alpha * 0.5})`).replace('rgb', 'rgba').replace('#', 'rgba('));
             gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
             
             this.ctx.fillStyle = gradient;
@@ -207,7 +371,6 @@
             this.ctx.arc(firefly.x, firefly.y, firefly.glowSize, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Núcleo brillante
             this.ctx.fillStyle = firefly.color;
             this.ctx.globalAlpha = firefly.brightness;
             this.ctx.beginPath();
@@ -216,22 +379,45 @@
             this.ctx.globalAlpha = 1;
         }
 
+        drawButterfly(butterfly) {
+            this.ctx.save();
+            this.ctx.translate(butterfly.x, butterfly.y);
+            
+            // Wing flapping
+            butterfly.wingAngle += butterfly.wingSpeed;
+            const wingOpen = Math.sin(butterfly.wingAngle) * 0.5 + 0.5;
+            
+            // Left wing
+            this.ctx.fillStyle = butterfly.color;
+            this.ctx.globalAlpha = 0.7;
+            this.ctx.beginPath();
+            this.ctx.ellipse(-butterfly.size * 0.3, 0, butterfly.size * wingOpen, butterfly.size * 1.2, -0.3, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Right wing
+            this.ctx.beginPath();
+            this.ctx.ellipse(butterfly.size * 0.3, 0, butterfly.size * wingOpen, butterfly.size * 1.2, 0.3, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Body
+            this.ctx.globalAlpha = 1;
+            this.ctx.fillStyle = '#1a1a1a';
+            this.ctx.fillRect(-2, -butterfly.size, 4, butterfly.size * 2);
+            
+            this.ctx.restore();
+        }
+
         updateLeaf(leaf) {
             const width = this.canvas.width / (window.devicePixelRatio || 1);
             const height = this.canvas.height / (window.devicePixelRatio || 1);
             
-            // Sway motion (balanceo horizontal)
             leaf.swayOffset += leaf.swaySpeed;
             const swayX = Math.sin(leaf.swayOffset) * leaf.sway;
             
-            // Update position with wind
             leaf.x += leaf.vx + swayX + this.wind.x;
             leaf.y += leaf.vy;
-            
-            // Rotation
             leaf.rotation += leaf.rotationSpeed;
             
-            // Reset when out of bounds
             if (leaf.y > height + 50) {
                 leaf.y = -50;
                 leaf.x = Math.random() * width;
@@ -245,44 +431,54 @@
             const width = this.canvas.width / (window.devicePixelRatio || 1);
             const height = this.canvas.height / (window.devicePixelRatio || 1);
             
-            // Update position
             firefly.x += firefly.vx;
             firefly.y += firefly.vy;
             
-            // Fade in/out
             firefly.brightness += firefly.fadeSpeed * firefly.fadeDirection;
             
-            if (firefly.brightness >= 1) {
-                firefly.brightness = 1;
+            if (firefly.brightness >= firefly.maxBrightness) {
+                firefly.brightness = firefly.maxBrightness;
                 firefly.fadeDirection = -1;
             } else if (firefly.brightness <= 0.1) {
                 firefly.brightness = 0.1;
                 firefly.fadeDirection = 1;
             }
             
-            // Random direction change
             if (Math.random() < 0.02) {
                 firefly.vx = (Math.random() - 0.5) * 0.3;
                 firefly.vy = (Math.random() - 0.5) * 0.3;
             }
             
-            // Wrap around
             if (firefly.x < 0) firefly.x = width;
             if (firefly.x > width) firefly.x = 0;
             if (firefly.y < 0) firefly.y = height;
             if (firefly.y > height) firefly.y = 0;
         }
 
+        updateButterfly(butterfly) {
+            const width = this.canvas.width / (window.devicePixelRatio || 1);
+            const height = this.canvas.height / (window.devicePixelRatio || 1);
+            
+            butterfly.flutter += 0.1;
+            butterfly.vy = Math.sin(butterfly.flutter) * 0.3;
+            
+            butterfly.x += butterfly.vx;
+            butterfly.y += butterfly.vy;
+            
+            if (butterfly.x > width + 50) {
+                butterfly.x = -50;
+                butterfly.y = Math.random() * height * 0.7;
+            }
+        }
+
         updateWind() {
             const now = Date.now();
             
-            // Wind gust every 3-8 seconds
             if (now > this.wind.nextGust) {
                 this.wind.strength = Math.random() * 2 - 1;
                 this.wind.nextGust = now + (Math.random() * 5000 + 3000);
             }
             
-            // Smooth wind transition
             this.wind.x += (this.wind.strength - this.wind.x) * 0.02;
         }
 
@@ -292,16 +488,18 @@
             
             this.ctx.clearRect(0, 0, width, height);
             
-            // Update wind
             this.updateWind();
             
-            // Draw and update leaves
             this.leaves.forEach(leaf => {
                 this.updateLeaf(leaf);
                 this.drawLeaf(leaf);
             });
             
-            // Draw and update fireflies
+            this.butterflies.forEach(butterfly => {
+                this.updateButterfly(butterfly);
+                this.drawButterfly(butterfly);
+            });
+            
             this.fireflies.forEach(firefly => {
                 this.updateFirefly(firefly);
                 this.drawFirefly(firefly);
@@ -316,14 +514,10 @@
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
                     this.resize();
-                    this.leafCount = this.getLeafCount();
-                    this.fireflyCount = this.getFireflyCount();
-                    this.createLeaves();
-                    this.createFireflies();
+                    this.updateForPeriod(this.dayNightCycle.currentPeriod);
                 }, 250);
             });
 
-            // Pause when tab not visible (save resources)
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     if (this.animationId) {
@@ -346,7 +540,7 @@
     }
 
     /* ==========================================
-       COUNTER ANIMATION
+       UTILITY FUNCTIONS
        ========================================== */
     function animateCounter(element, target, duration = 2000) {
         const start = 0;
@@ -364,9 +558,6 @@
         }, 16);
     }
 
-    /* ==========================================
-       SCROLL ANIMATIONS
-       ========================================== */
     class ScrollAnimations {
         constructor() {
             this.elements = document.querySelectorAll('[data-animate]');
@@ -397,9 +588,6 @@
         }
     }
 
-    /* ==========================================
-       NAVBAR FUNCTIONALITY
-       ========================================== */
     class Navbar {
         constructor() {
             this.navbar = document.getElementById('navbar');
@@ -462,9 +650,6 @@
         }
     }
 
-    /* ==========================================
-       SMOOTH SCROLL
-       ========================================== */
     function initSmoothScroll() {
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -485,9 +670,6 @@
         });
     }
 
-    /* ==========================================
-       LAZY LOADING IMAGES
-       ========================================== */
     function initLazyLoading() {
         if ('IntersectionObserver' in window) {
             const imageObserver = new IntersectionObserver((entries, observer) => {
@@ -507,9 +689,6 @@
         }
     }
 
-    /* ==========================================
-       STATS COUNTER
-       ========================================== */
     function initStatsCounter() {
         const statNumbers = document.querySelectorAll('.stat-number[data-count]');
         
@@ -539,6 +718,9 @@
        ========================================== */
     function init() {
         requestAnimationFrame(() => {
+            // Initialize day/night cycle
+            const dayNightCycle = new DayNightCycle();
+            
             // Initialize Amazon effect
             const amazonCanvas = document.getElementById('amazonCanvas');
             if (amazonCanvas) {
@@ -553,7 +735,7 @@
                     amazonCanvas.style.width = width + 'px';
                     amazonCanvas.style.height = height + 'px';
                 }
-                new AmazonEffect(amazonCanvas);
+                window.amazonEffectInstance = new AmazonEffect(amazonCanvas, dayNightCycle);
             }
 
             new Navbar();
@@ -561,6 +743,10 @@
             initSmoothScroll();
             initLazyLoading();
             initStatsCounter();
+            
+            // Log current period
+            const hour = new Date().getHours();
+            console.log(`🌿 CCPL Amazon Effect initialized at ${hour}:00 - Period: ${dayNightCycle.currentPeriod}`);
         });
     }
 
@@ -572,6 +758,7 @@
 
     window.CCPL = {
         AmazonEffect,
+        DayNightCycle,
         ScrollAnimations,
         Navbar
     };
