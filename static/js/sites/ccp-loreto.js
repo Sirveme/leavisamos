@@ -1079,3 +1079,21 @@ console.log('🌿 CCPL Script iniciando...');
     };
 
 })();
+
+// Funciones para top bar
+window.openSearchModal = function() {
+    document.getElementById('searchModal').classList.add('active');
+    setTimeout(() => document.getElementById('searchInputModal').focus(), 300);
+};
+
+window.closeSearchModal = function() {
+    document.getElementById('searchModal').classList.remove('active');
+};
+
+// Cerrar modal búsqueda con ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const searchModal = document.getElementById('searchModal');
+        if (searchModal) searchModal.classList.remove('active');
+    }
+});
