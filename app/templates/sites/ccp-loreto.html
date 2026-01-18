@@ -3,482 +3,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Colegio de Contadores Públicos de Loreto - 60 años sirviendo a la región amazónica">
-    <meta name="theme-color" content="#1a4d2e">
-    <title>CCPL - 60 Años de Historia</title>
-    
+    <title>Colegio de Contadores Públicos de Loreto - 60 Años</title>
+
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
     <link rel="apple-touch-icon" href="/static/img/icon-192.png">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="/static/css/sites/ccp-loreto.css">
+
+    <style>
+        /* Estilos específicos para Hero Glassmorphism */
+        .hero-glass {
+            position: relative;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 50%, rgba(26,95,58,0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(212,175,55,0.2) 0%, transparent 50%),
+                        linear-gradient(135deg, #0a1f1a 0%, #051410 100%);
+            overflow: hidden;
+        }
+
+        /* Canvas para partículas */
+        #particlesCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Elementos glassmorphism flotantes */
+        .glass-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .glass-shape {
+            position: absolute;
+            background: rgba(26, 95, 58, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: floatGlass 20s ease-in-out infinite;
+        }
+
+        .glass-shape-1 {
+            width: 400px;
+            height: 400px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .glass-shape-2 {
+            width: 300px;
+            height: 300px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .glass-shape-3 {
+            width: 250px;
+            height: 250px;
+            bottom: 20%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes floatGlass {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            }
+            25% {
+                transform: translate(20px, -20px) rotate(5deg);
+                border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+            }
+            50% {
+                transform: translate(-20px, 20px) rotate(-5deg);
+                border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+            }
+            75% {
+                transform: translate(10px, 10px) rotate(3deg);
+                border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
+            }
+        }
+
+        /* Card de vidrio para el contenido */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(10, 14, 20, 0.4);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 30px;
+            padding: 60px 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(212,175,55,0.1) 0%, transparent 50%);
+            border-radius: 30px;
+            pointer-events: none;
+        }
+
+        /* Orbes luminosos */
+        .orbs-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            animation: pulseOrb 8s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%);
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(26,95,58,0.5) 0%, transparent 70%);
+            bottom: 30%;
+            right: 15%;
+            animation-delay: 4s;
+        }
+
+        .orb-3 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(244,208,63,0.4) 0%, transparent 70%);
+            top: 50%;
+            right: 40%;
+            animation-delay: 2s;
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% {
+                transform: scale(1) translateY(0);
+                opacity: 0.4;
+            }
+            50% {
+                transform: scale(1.2) translateY(-20px);
+                opacity: 0.6;
+            }
+        }
+
+        /* Partículas doradas flotantes */
+        .golden-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .golden-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--dorado);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--dorado);
+            animation: floatParticle 8s ease-in-out infinite;
+        }
+
+        .gp-1 { top: 10%; left: 20%; animation-delay: 0s; }
+        .gp-2 { top: 30%; left: 70%; animation-delay: 1s; }
+        .gp-3 { top: 50%; left: 40%; animation-delay: 2s; }
+        .gp-4 { top: 70%; left: 60%; animation-delay: 3s; }
+        .gp-5 { top: 20%; left: 90%; animation-delay: 4s; }
+        .gp-6 { top: 80%; left: 15%; animation-delay: 1.5s; }
+
+        @keyframes floatParticle {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-30px) scale(1.5);
+                opacity: 1;
+            }
+        }
+
+        /* Ajustes para contenido en glass */
+        .hero-glass .hero-content {
+            padding: 0;
+        }
+
+        .hero-glass .badge-60 {
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .hero-glass .btn-hero {
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 40px 30px;
+                margin: 0 20px;
+            }
+
+            .glass-shape {
+                opacity: 0.5;
+            }
+
+            .glass-shape-1 {
+                width: 250px;
+                height: 250px;
+            }
+
+            .glass-shape-2,
+            .glass-shape-3 {
+                width: 180px;
+                height: 180px;
+            }
+
+            .orb {
+                opacity: 0.3;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- TOP BAR FIJA -->
-    <nav class="top-bar" id="topBar">
-        <button class="top-menu-btn" onclick="toggleMenu()">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
+    <!-- Header -->
+    <header class="header">
+        <div class="container-header">
+            <div class="logo-wrapper">
+                <img src="/static/img/logo-ccpl.png" alt="CCPL" class="logo">
+            </div>
+            <nav class="nav-top">
+                <button class="btn-menu" id="menuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="#" class="btn-comunicado pulse">NUEVO COMUNICADO</a>
+                <a href="/acceso-a-usuarios/" class="btn-acceder">ACCEDER</a>
+            </nav>
+        </div>
+    </header>
 
-        <div class="top-badge" onclick="scrollToSection('comunicados')">
-            <span class="badge-pulse"></span>
-            <span class="badge-icon">📢</span>
-            <span class="badge-text">Nuevo</span>
+    <!-- Hero Section - Glassmorphism -->
+    <section class="hero hero-glass">
+        <!-- Canvas para partículas animadas -->
+        <canvas id="particlesCanvas"></canvas>
+
+        <!-- Orbes luminosos -->
+        <div class="orbs-container">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
         </div>
 
-        <button class="top-login-btn" onclick="window.location.href='/login'">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
+        <!-- Formas de vidrio -->
+        <div class="glass-shapes">
+            <div class="glass-shape glass-shape-1"></div>
+            <div class="glass-shape glass-shape-2"></div>
+            <div class="glass-shape glass-shape-3"></div>
+        </div>
+
+        <!-- Partículas doradas -->
+        <div class="golden-particles">
+            <div class="golden-particle gp-1"></div>
+            <div class="golden-particle gp-2"></div>
+            <div class="golden-particle gp-3"></div>
+            <div class="golden-particle gp-4"></div>
+            <div class="golden-particle gp-5"></div>
+            <div class="golden-particle gp-6"></div>
+        </div>
+
+        <!-- Fauna Amazónica -->
+        <div class="fauna-container">
+            <div class="bufeo bufeo-1"></div>
+            <div class="bufeo bufeo-2"></div>
+            <div class="tortuga tortuga-1"></div>
+            <div class="tortuga tortuga-2"></div>
+        </div>
+
+        <!-- Hojas flotantes -->
+        <div class="leaves-container">
+            <div class="leaf leaf-1"></div>
+            <div class="leaf leaf-2"></div>
+            <div class="leaf leaf-3"></div>
+            <div class="leaf leaf-4"></div>
+            <div class="leaf leaf-5"></div>
+        </div>
+
+        <div class="hero-content" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+            <div class="glass-card">
+                <div class="badge-60">60 AÑOS</div>
+                <h1 class="hero-title">
+                    <span class="title-line">Colegio de Contadores</span>
+                    <span class="title-line">Públicos de Loreto</span>
+                </h1>
+                <p class="hero-subtitle">SIRVIENDO A LA REGIÓN</p>
+                <a href="#reactivate" class="btn-hero">Reactiva tu matrícula</a>
+                <div class="scroll-indicator">
+                    <span>Desliza</span>
+                    <div class="scroll-arrow"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stat-card">
+                <div class="stat-number">950</div>
+                <div class="stat-label">Colegiados Activos</div>
+            </div>
+            <div class="stat-card highlight">
+                <div class="stat-number">1,300</div>
+                <div class="stat-label">Te esperan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">60</div>
+                <div class="stat-label">Años de historia</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section">
+        <div class="container">
+            <h2 class="section-title">Sectores donde servimos</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-video">
+                        <div class="video-thumb" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8c 100%)"></div>
+                        <span class="sector-tag">Sector Público</span>
+                    </div>
+                    <h3>Entidades Gubernamentales</h3>
+                </div>
+                <div class="service-card">
+                    <div class="service-video">
+                        <div class="video-thumb" style="background: linear-gradient(135deg, #2d5a1e 0%, #4a8c2d 100%)"></div>
+                        <span class="sector-tag">Agroindustria</span>
+                    </div>
+                    <h3>Sector Agrícola</h3>
+                </div>
+                <div class="service-card">
+                    <div class="service-video">
+                        <div class="video-thumb" style="background: linear-gradient(135deg, #5a1e2d 0%, #8c2d4a 100%)"></div>
+                        <span class="sector-tag">Comercio</span>
+                    </div>
+                    <h3>Empresas Privadas</h3>
+                </div>
+                <div class="service-card">
+                    <div class="service-video">
+                        <div class="video-thumb" style="background: linear-gradient(135deg, #1e5a4a 0%, #2d8c6f 100%)"></div>
+                        <span class="sector-tag">Turismo</span>
+                    </div>
+                    <h3>Hotelería y Servicios</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item" data-modal="directivos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
-            <span>Acceso</span>
+            <span>Directivos</span>
+        </button>
+        <button class="nav-item" data-modal="transparencia">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Transparencia</span>
+        </button>
+        <button class="nav-item nav-item-primary" id="reactivateBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Reactivarse</span>
+        </button>
+        <button class="nav-item" id="consultasBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <span>Consultas</span>
         </button>
     </nav>
 
-    <!-- MENU LATERAL -->
-    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()">
-        <nav class="menu-content" onclick="event.stopPropagation()">
-            <button class="menu-close" onclick="closeMenu()">×</button>
-            
-            <div class="menu-logo">
-                <img src="/static/img/logo-ccpl.png" alt="CCPL">
-                <h3>Menú Principal</h3>
+    <!-- Modals -->
+    <div class="modal" id="consultasModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-consultas">
+            <button class="modal-close">&times;</button>
+            <div class="consultas-header">
+                <div class="mic-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path>
+                        <path d="M19 11a7 7 0 0 1-14 0M12 19v4M8 23h8"></path>
+                    </svg>
+                </div>
+                <h2>¿Qué deseas consultar?</h2>
+                <p class="subtitle">Toca el micrófono o escribe tu consulta</p>
             </div>
-            
-            <div class="menu-links">
-                <a href="#directivos" onclick="scrollToSection('directivos')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    Junta Directiva
-                </a>
-                <a href="#transparencia" onclick="scrollToSection('transparencia')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    Transparencia
-                </a>
-                <a href="#club" onclick="scrollToSection('club')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 6v6l4 2"></path>
-                    </svg>
-                    Club de Contadores
-                </a>
-                <a href="#cursos" onclick="scrollToSection('cursos')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    </svg>
-                    Capacitaciones
-                </a>
-                <a href="#comunicados" onclick="scrollToSection('comunicados')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    Comunicados
-                    <span class="menu-badge">Nuevo</span>
-                </a>
-                <a href="#contacto" onclick="scrollToSection('contacto')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                    </svg>
-                    Contacto
-                </a>
-            </div>
-        </nav>
-    </div>
-
-    <!-- HERO -->
-    <section class="hero" id="hero">
-        <canvas class="amazon-canvas" id="amazonCanvas"></canvas>
-        <div class="hero-gradient"></div>
-        
-        <div class="hero-content">
-            <img src="/static/img/logo-ccpl.png" alt="CCPL Logo" class="hero-logo">
-            
-            <div class="hero-text">
-                <h1 class="hero-title">
-                    <span class="title-institution">COLEGIO DE CONTADORES PÚBLICOS DE LORETO</span>
-                    <span class="title-anniversary">60 AÑOS SIRVIENDO A LA REGIÓN</span>
-                    <span class="title-years">
-                        <span class="year-start">1966</span>
-                        <span class="year-line"></span>
-                        <span class="year-end">2026</span>
-                    </span>
-                </h1>
-                
-                <button class="btn-cta" onclick="window.location.href='/registro'">
-                    <span>Únete al Colegio</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" placeholder="Ej: Estado de mi colegiatura, requisitos para reactivarme...">
+                <button class="voice-btn" id="voiceBtn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"></path>
                     </svg>
                 </button>
             </div>
-        </div>
-    </section>
-
-    <!-- SERVICIOS -->
-    <section class="section" id="servicios">
-        <div class="container">
-            <h2 class="section-title">Nuestros Servicios</h2>
-            <p class="section-subtitle">Atención profesional para todos nuestros colegiados</p>
-            
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">📄</div>
-                    <h3>Certificado de Habilidad</h3>
-                    <p>Obtén tu certificado de forma rápida y segura. Válido para ejercer la profesión contable.</p>
-                    <button class="btn-service" onclick="window.location.href='/login'">Solicitar</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">💳</div>
-                    <h3>Pagos en Línea</h3>
-                    <p>Paga tu cuota mensual de S/. 20 fácilmente desde cualquier dispositivo.</p>
-                    <button class="btn-service" onclick="window.location.href='/login'">Pagar ahora</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">📚</div>
-                    <h3>Capacitaciones</h3>
-                    <p>Actualízate con nuestros cursos y talleres especializados para contadores.</p>
-                    <button class="btn-service" onclick="scrollToSection('cursos')">Ver más</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">🔍</div>
-                    <h3>Consulta de Habilidad</h3>
-                    <p>Verifica el estado de habilidad de cualquier contador público colegiado.</p>
-                    <button class="btn-service" onclick="openSearchModal()">Buscar</button>
-                </div>
+            <div class="quick-queries">
+                <button class="query-chip">Estado de colegiatura</button>
+                <button class="query-chip">Requisitos para colegiarse</button>
+                <button class="query-chip">Alquiler de ambientes</button>
+                <button class="query-chip">Próximos eventos</button>
+                <button class="query-chip">Comunicados recientes</button>
+                <button class="query-chip">Directivos actuales</button>
             </div>
-        </div>
-    </section>
-
-    <!-- JUNTA DIRECTIVA -->
-    <section class="section section-dark" id="directivos">
-        <div class="container">
-            <h2 class="section-title">Consejo Directivo 2024-2025</h2>
-            <p class="section-subtitle">Gestión comprometida con la transparencia y el servicio</p>
-            
-            <div class="directiva-grid">
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Decano</h3>
-                    <p class="directivo-name">CPC Juan Carlos Pérez</p>
-                </div>
-                
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Vicedecano</h3>
-                    <p class="directivo-name">CPC María Elena Ruiz</p>
-                </div>
-                
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Secretario</h3>
-                    <p class="directivo-name">CPC Roberto Vargas</p>
-                </div>
-                
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Tesorero</h3>
-                    <p class="directivo-name">CPC Carmen López</p>
-                </div>
-                
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Director I</h3>
-                    <p class="directivo-name">CPC Luis Fernández</p>
-                </div>
-                
-                <div class="directivo-card">
-                    <div class="directivo-img">
-                        <div class="img-placeholder">👤</div>
-                    </div>
-                    <h3>Director II</h3>
-                    <p class="directivo-name">CPC Ana García</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- TRANSPARENCIA -->
-    <section class="section" id="transparencia">
-        <div class="container">
-            <h2 class="section-title">Transparencia</h2>
-            <p class="section-subtitle">Información pública y rendición de cuentas</p>
-            
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">📊</div>
-                    <h3>Estados Financieros</h3>
-                    <p>Balance general y estado de resultados actualizado mensualmente.</p>
-                    <button class="btn-service">Ver documentos</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">📋</div>
-                    <h3>Actas y Acuerdos</h3>
-                    <p>Acceso a las actas de las sesiones del Consejo Directivo.</p>
-                    <button class="btn-service">Ver actas</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">👥</div>
-                    <h3>Padrón de Miembros</h3>
-                    <p>Listado oficial de contadores colegiados hábiles e inhábiles.</p>
-                    <button class="btn-service">Consultar</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">⚖️</div>
-                    <h3>Normativa Interna</h3>
-                    <p>Estatutos, reglamentos y código de ética profesional.</p>
-                    <button class="btn-service">Ver normativa</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CLUB -->
-    <section class="section section-dark" id="club">
-        <div class="container">
-            <h2 class="section-title">Club de Contadores</h2>
-            <p class="section-subtitle">Beneficios exclusivos para miembros</p>
-            
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">🎓</div>
-                    <h3>Capacitación Continua</h3>
-                    <p>Acceso a cursos, seminarios y conferencias con tarifas especiales.</p>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">🤝</div>
-                    <h3>Networking Profesional</h3>
-                    <p>Eventos y actividades para fortalecer vínculos entre colegas.</p>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">📚</div>
-                    <h3>Biblioteca Digital</h3>
-                    <p>Recursos, libros y publicaciones especializadas en contabilidad.</p>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">💼</div>
-                    <h3>Bolsa de Trabajo</h3>
-                    <p>Oportunidades laborales exclusivas para miembros del colegio.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CAPACITACIONES -->
-    <section class="section" id="cursos">
-        <div class="container">
-            <h2 class="section-title">Próximas Capacitaciones</h2>
-            <p class="section-subtitle">Actualización profesional continua</p>
-            
-            <div class="capacitaciones-grid">
-                <div class="capacitacion-card">
-                    <div class="capacitacion-date">
-                        <div class="date-day">25</div>
-                        <div class="date-month">ENE</div>
-                    </div>
-                    <div class="capacitacion-info">
-                        <h3>NIIF Actualizadas 2025</h3>
-                        <p>Nuevas normas internacionales de información financiera y su aplicación práctica.</p>
-                        <p><strong>Modalidad:</strong> Virtual • <strong>Duración:</strong> 8 horas</p>
-                    </div>
-                </div>
-                
-                <div class="capacitacion-card">
-                    <div class="capacitacion-date">
-                        <div class="date-day">10</div>
-                        <div class="date-month">FEB</div>
-                    </div>
-                    <div class="capacitacion-info">
-                        <h3>Fiscalización Tributaria</h3>
-                        <p>Procedimientos de fiscalización de SUNAT y estrategias de defensa fiscal.</p>
-                        <p><strong>Modalidad:</strong> Presencial • <strong>Duración:</strong> 16 horas</p>
-                    </div>
-                </div>
-                
-                <div class="capacitacion-card">
-                    <div class="capacitacion-date">
-                        <div class="date-day">05</div>
-                        <div class="date-month">MAR</div>
-                    </div>
-                    <div class="capacitacion-info">
-                        <h3>Auditoría Forense</h3>
-                        <p>Técnicas de investigación contable y prevención de fraudes corporativos.</p>
-                        <p><strong>Modalidad:</strong> Híbrida • <strong>Duración:</strong> 24 horas</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- COMUNICADOS -->
-    <section class="section section-dark" id="comunicados">
-        <div class="container">
-            <h2 class="section-title">Comunicados Oficiales</h2>
-            <p class="section-subtitle">Mantente informado de las últimas novedades</p>
-            
-            <div class="comunicados-list">
-                <div class="comunicado-item nuevo">
-                    <span class="comunicado-badge">Nuevo</span>
-                    <div class="comunicado-content">
-                        <h3>Convocatoria Asamblea General Ordinaria</h3>
-                        <p class="comunicado-date">15 de Enero, 2026</p>
-                        <p>Se convoca a todos los miembros hábiles a la Asamblea General Ordinaria que se realizará el 28 de Enero del 2026 a las 6:00 PM en el auditorio del colegio.</p>
-                        <button class="btn-link">Leer más →</button>
-                    </div>
-                </div>
-                
-                <div class="comunicado-item">
-                    <div class="comunicado-content">
-                        <h3>Nuevas Tarifas de Honorarios Profesionales</h3>
-                        <p class="comunicado-date">08 de Enero, 2026</p>
-                        <p>El Consejo Directivo ha aprobado la actualización de las tarifas mínimas referenciales de honorarios profesionales para el ejercicio 2026.</p>
-                        <button class="btn-link">Leer más →</button>
-                    </div>
-                </div>
-                
-                <div class="comunicado-item">
-                    <div class="comunicado-content">
-                        <h3>Cronograma de Capacitaciones Primer Semestre</h3>
-                        <p class="comunicado-date">20 de Diciembre, 2025</p>
-                        <p>Publicamos el calendario completo de cursos, seminarios y talleres programados para el primer semestre del 2026.</p>
-                        <button class="btn-link">Leer más →</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CONTACTO -->
-    <section class="section" id="contacto">
-        <div class="container">
-            <h2 class="section-title">Contáctanos</h2>
-            <p class="section-subtitle">Estamos para servirte</p>
-            
-            <div class="contacto-grid">
-                <div class="contacto-item">
-                    <div class="contacto-icon">📍</div>
-                    <h3>Dirección</h3>
-                    <p>Jr. Próspero 123<br>Iquitos, Loreto<br>Perú</p>
-                </div>
-                
-                <div class="contacto-item">
-                    <div class="contacto-icon">📞</div>
-                    <h3>Teléfono</h3>
-                    <p>(065) 123-456<br>Cel: 987 654 321<br>Lun - Vie: 8am - 6pm</p>
-                </div>
-                
-                <div class="contacto-item">
-                    <div class="contacto-icon">✉️</div>
-                    <h3>Email</h3>
-                    <p>info@ccploreto.org<br>secretaria@ccploreto.org<br>Respuesta en 24h</p>
-                </div>
-                
-                <div class="contacto-item">
-                    <div class="contacto-icon">🕐</div>
-                    <h3>Horario</h3>
-                    <p>Lunes a Viernes<br>8:00 AM - 1:00 PM<br>3:00 PM - 6:00 PM</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 Colegio de Contadores Públicos de Loreto. Todos los derechos reservados.</p>
-            <p>60 años al servicio de la profesión contable en la Amazonía Peruana</p>
-        </div>
-    </footer>
-
-    <!-- BARRA INFERIOR -->
-    <nav class="bottom-bar">
-        <div class="bottom-bar-content">
-            <button class="bottom-btn" onclick="scrollToSection('directivos')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                </svg>
-                <span class="bottom-btn-text">Directivos</span>
-            </button>
-            
-            <button class="bottom-btn" onclick="scrollToSection('transparencia')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span class="bottom-btn-text">Transparencia</span>
-            </button>
-            
-            <button class="bottom-btn" onclick="scrollToSection('club')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 6v6l4 2"></path>
-                </svg>
-                <span class="bottom-btn-text">Club</span>
-            </button>
-            
-            <button class="bottom-btn" onclick="scrollToSection('cursos')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
-                <span class="bottom-btn-text">Cursos</span>
-            </button>
-            
-            <button class="bottom-btn" id="searchBtn" onclick="openSearchModal()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                <span class="bottom-btn-text">Buscar</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- MODAL BÚSQUEDA -->
-    <div class="search-modal" id="searchModal">
-        <div class="search-modal-content">
-            <button class="search-modal-close" onclick="closeSearchModal()">×</button>
-            <h2>Verificar Habilidad</h2>
-            <input 
-                type="text" 
-                id="searchInputModal" 
-                placeholder="Apellidos o Código Matrícula" 
-                autocomplete="off"
-            >
-            <div class="search-results-modal" id="searchResultsModal"></div>
         </div>
     </div>
 
-    <script src="/static/js/sites/ccp-loreto.js"></script>
+    <div class="modal" id="directivosModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-directivos">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Consejo Directivo 2024-2025</h2>
+            <div class="directivos-grid">
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Decano</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Vice Decano</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Director Secretario</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Director Tesorero</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Vocal 1</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+                <div class="directivo-card">
+                    <div class="directivo-photo"></div>
+                    <h3>CPCC Nombre Apellido</h3>
+                    <p class="cargo">Vocal 2</p>
+                    <a href="#" class="ver-mas">Ver más →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/sites/ccp-loreto.js"></script>
 </body>
 </html>
