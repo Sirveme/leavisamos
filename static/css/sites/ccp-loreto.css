@@ -545,7 +545,7 @@ body {
     box-shadow: 
         0 -10px 40px rgba(0, 0, 0, 0.9),
         inset 0 1px 0 rgba(212, 175, 55, 0.2);
-    padding: 1.25rem;
+    padding: 0.75rem 1rem;
 }
 
 .bottom-bar-content {
@@ -553,7 +553,7 @@ body {
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
     justify-content: space-between;
 }
 
@@ -562,8 +562,8 @@ body {
 }
 
 .bottom-logo img {
-    width: 58px;
-    height: 58px;
+    width: 44px;
+    height: 44px;
     display: block;
     filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.8));
 }
@@ -571,7 +571,7 @@ body {
 .bottom-buttons {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.75rem;
     flex: 1;
     justify-content: center;
 }
@@ -581,8 +581,8 @@ body {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.75rem;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
     background: linear-gradient(135deg, 
         rgba(26, 77, 46, 0.4) 0%, 
         rgba(26, 77, 46, 0.6) 100%
@@ -590,7 +590,7 @@ body {
     border: 2px solid rgba(212, 175, 55, 0.3);
     border-radius: 12px;
     color: var(--color-white);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -802,19 +802,20 @@ body {
     z-index: var(--z-menu);
     background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
     color: var(--color-white);
-    padding: 1rem 1.75rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 50px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     box-shadow: 
         0 8px 30px rgba(0, 0, 0, 0.8),
         0 0 40px rgba(231, 76, 60, 0.5);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.75rem;
     font-weight: 800;
     cursor: pointer;
     transition: all 0.3s;
-    position: relative;
+    max-width: fit-content;
+    white-space: nowrap;
 }
 
 .notification-badge.active {
@@ -1491,4 +1492,5 @@ body {
 
 .text-center {
     text-align: center;
-}}
+}
+}
