@@ -26,20 +26,22 @@
     <!-- CSS DINÁMICO SEGÚN DOMINIO -->
     <style>
         :root {
-            /* Si theme existe, usa su color, si no, usa el default */
-            --primary: {{ theme.primary_color if theme else '#6366f1' }};
+            /* Definimos las variables con los valores que vienen del Backend */
+            --primary: {{ theme.primary_color | default('#6366f1') }};
+            --primary-hover: color-mix(in srgb, var(--primary), black 10%);
+            --primary-light: color-mix(in srgb, var(--primary), white 90%);
         }
         
-        /* Forzar color de la barra HTMX */
-        .htmx-progress-bar {
-            background-color: var(--primary) !important;
-        }
+        /* Clases utilitarias que usan la variable */
+        .bg-primary { background-color: var(--primary) !important; }
+        .text-primary { color: var(--primary) !important; }
+        .border-primary { border-color: var(--primary) !important; }
+        .ring-primary { --tw-ring-color: var(--primary) !important; }
         
-        /* Forzar color de selección de texto */
-        ::selection {
-            background-color: var(--primary);
-            color: white;
-        }
+        .hover\:bg-primary-dark:hover { background-color: var(--primary-hover) !important; }
+        
+        /* Barra HTMX */
+        .htmx-progress-bar { background-color: var(--primary) !important; }
     </style>
 
 </head>
