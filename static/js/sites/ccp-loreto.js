@@ -714,6 +714,280 @@
     }
 
     /* ==========================================
+       MODAL SYSTEM
+       ========================================== */
+    const modalData = {
+        reactivacion: {
+            title: '🎉 Reactiva tu colegiatura',
+            content: `
+                <p class="modal-text">¡Bienvenido de vuelta! El Colegio de Contadores Públicos de Loreto te invita a reactivar tu colegiatura y ser parte de nuestra comunidad profesional.</p>
+                
+                <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #1a4d2e; margin: 1.5rem 0;">
+                    <h3 style="color: #1a4d2e; margin-bottom: 0.5rem;">💰 Cuota Mensual: S/. 20</h3>
+                    <p style="color: #333; margin: 0;">La cuota más accesible del país para mantenerte activo y habilitado.</p>
+                </div>
+                
+                <h3 style="color: #1a4d2e; margin: 1.5rem 0 1rem;">Beneficios al reactivar:</h3>
+                <ul style="color: #333; line-height: 1.8; padding-left: 1.5rem;">
+                    <li>Certificado de habilidad válido</li>
+                    <li>Acceso a capacitaciones gratuitas</li>
+                    <li>Asesoría profesional</li>
+                    <li>Descuentos en eventos</li>
+                    <li>Red de networking profesional</li>
+                    <li>Reconocimiento en el 60° aniversario</li>
+                </ul>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="https://wa.me/51979169813?text=Hola,%20quiero%20reactivar%20mi%20colegiatura" 
+                       target="_blank"
+                       style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); 
+                              color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; 
+                              font-weight: 700; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+                        💬 Contactar por WhatsApp
+                    </a>
+                </div>
+            `
+        },
+        certificado: {
+            title: '📄 Certificado de Habilidad',
+            content: `
+                <p class="modal-text">El Certificado de Habilidad es el documento que acredita tu condición de contador público hábil y te permite ejercer tu profesión.</p>
+                
+                <h3 style="color: #1a4d2e; margin: 1.5rem 0 1rem;">Requisitos:</h3>
+                <ul style="color: #333; line-height: 1.8; padding-left: 1.5rem;">
+                    <li>Estar al día en el pago de cuotas mensuales</li>
+                    <li>No tener sanciones vigentes</li>
+                    <li>Haber actualizado tus datos</li>
+                </ul>
+                
+                <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; border-left: 4px solid #d4af37;">
+                    <h3 style="color: #856404; margin-bottom: 0.5rem;">⚡ Emisión inmediata</h3>
+                    <p style="color: #856404; margin: 0;">Una vez verificado tu estado de cuenta, tu certificado estará listo en minutos.</p>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="https://wa.me/51979169813?text=Necesito%20mi%20certificado%20de%20habilidad" 
+                       target="_blank"
+                       style="display: inline-block; background: linear-gradient(135deg, #1a4d2e 0%, #2d7a4f 100%); 
+                              color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; 
+                              font-weight: 700; box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);">
+                        Solicitar Certificado
+                    </a>
+                </div>
+            `
+        },
+        pagos: {
+            title: '💳 Realizar Pago',
+            content: `
+                <p class="modal-text">Mantente al día con tu cuota mensual de S/. 20 y disfruta de todos los beneficios de estar colegiado.</p>
+                
+                <h3 style="color: #1a4d2e; margin: 1.5rem 0 1rem;">Métodos de pago:</h3>
+                
+                <div style="display: grid; gap: 1rem; margin: 1.5rem 0;">
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 2px solid #dee2e6;">
+                        <h4 style="color: #1a4d2e; margin-bottom: 0.5rem;">🏦 Transferencia Bancaria</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0;">BCP - Cuenta Corriente Soles</p>
+                        <p style="color: #333; font-weight: 700; font-family: monospace;">123-456789-0-12</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 2px solid #dee2e6;">
+                        <h4 style="color: #1a4d2e; margin-bottom: 0.5rem;">📱 Yape / Plin</h4>
+                        <p style="color: #333; font-weight: 700; font-family: monospace;">979 169 813</p>
+                    </div>
+                </div>
+                
+                <div style="background: #e8f5e9; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; border-left: 4px solid #1a4d2e;">
+                    <p style="color: #1a4d2e; margin: 0; font-weight: 600;">📸 Envía tu voucher por WhatsApp al +51 979 169 813</p>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="https://wa.me/51979169813?text=Hola,%20quiero%20pagar%20mi%20cuota" 
+                       target="_blank"
+                       style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); 
+                              color: #000; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; 
+                              font-weight: 700; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);">
+                        Enviar Voucher
+                    </a>
+                </div>
+            `
+        },
+        voice: {
+            title: '🎤 Comando de Voz',
+            content: `
+                <div style="text-align: center; padding: 2rem 0;">
+                    <div style="width: 120px; height: 120px; margin: 0 auto 2rem; 
+                                background: linear-gradient(135deg, #1a4d2e 0%, #2d7a4f 100%);
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                box-shadow: 0 8px 32px rgba(26, 77, 46, 0.3);">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                    
+                    <h3 style="color: #1a4d2e; margin-bottom: 1rem;">Próximamente disponible</h3>
+                    <p style="color: #666; margin-bottom: 2rem;">Podrás interactuar con el sistema usando tu voz</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h4 style="color: #1a4d2e; margin-bottom: 1rem;">Ejemplos de comandos:</h4>
+                    <ul style="color: #666; line-height: 2; list-style: none; padding: 0;">
+                        <li>🔍 "Buscar contador Juan Pérez"</li>
+                        <li>💰 "¿Cuánto debo?"</li>
+                        <li>📄 "Descargar mi certificado"</li>
+                        <li>📞 "Horario de atención"</li>
+                        <li>❓ "Preguntas frecuentes"</li>
+                    </ul>
+                </div>
+                
+                <p style="text-align: center; color: #999; font-size: 0.875rem; margin-top: 2rem;">
+                    Esta función estará disponible en la Fase 2 del desarrollo
+                </p>
+            `
+        }
+    };
+
+    window.openModal = function(type) {
+        const overlay = document.getElementById('modalOverlay');
+        const content = document.getElementById('modalContent');
+        const data = modalData[type];
+        
+        if (!data) return;
+        
+        content.innerHTML = `
+            <h2 class="modal-title">${data.title}</h2>
+            ${data.content}
+        `;
+        
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeModal = function() {
+        const overlay = document.getElementById('modalOverlay');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+
+    /* ==========================================
+       SEARCH SYSTEM
+       ========================================== */
+    const searchToggle = document.getElementById('searchToggle');
+    const searchWrapper = document.getElementById('searchWrapper');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    // Mock data - Replace with real API call
+    const contadores = [
+        { name: 'Juan Carlos Pérez García', status: 'Hábil', cpp: '00123' },
+        { name: 'María Elena Rodríguez López', status: 'Hábil', cpp: '00456' },
+        { name: 'Carlos Alberto Vargas Ruiz', status: 'Inhábil', cpp: '00789' },
+        { name: 'Ana Patricia Flores Castro', status: 'Hábil', cpp: '01012' },
+        { name: 'Roberto Miguel Sánchez Torres', status: 'Hábil', cpp: '01345' }
+    ];
+
+    searchToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        searchWrapper.classList.toggle('active');
+        if (searchWrapper.classList.contains('active')) {
+            searchInput.focus();
+        }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            searchResults.classList.remove('has-results');
+            searchResults.innerHTML = '';
+            return;
+        }
+        
+        const results = contadores.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.cpp.includes(query)
+        );
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = `
+                <div style="padding: 1rem; text-align: center; color: #666;">
+                    No se encontraron resultados
+                </div>
+            `;
+            searchResults.classList.add('has-results');
+            return;
+        }
+        
+        searchResults.innerHTML = results.map(c => `
+            <div class="search-result-item">
+                <div class="search-result-name">${c.name}</div>
+                <div class="search-result-status">
+                    CPP: ${c.cpp} • 
+                    <span style="color: ${c.status === 'Hábil' ? '#1a4d2e' : '#c41e3a'}; font-weight: 600;">
+                        ${c.status}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+        
+        searchResults.classList.add('has-results');
+    });
+
+    // Close search when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchToggle.contains(e.target) && !searchWrapper.contains(e.target)) {
+            searchWrapper.classList.remove('active');
+            searchResults.classList.remove('has-results');
+        }
+    });
+
+    /* ==========================================
+       LOGO EASTER EGG
+       ========================================== */
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+
+    document.getElementById('heroLogo').addEventListener('click', () => {
+        logoClickCount++;
+        
+        if (logoClickTimer) {
+            clearTimeout(logoClickTimer);
+        }
+        
+        if (logoClickCount === 5) {
+            openModal('reactivacion');
+            logoClickCount = 0;
+        } else {
+            logoClickTimer = setTimeout(() => {
+                logoClickCount = 0;
+            }, 2000);
+        }
+    });
+
+    /* ==========================================
+       NOTIFICATION BADGE
+       ========================================== */
+    // Show notification after 3 seconds (example)
+    setTimeout(() => {
+        const badge = document.getElementById('notificationBadge');
+        badge.classList.add('active');
+        
+        badge.addEventListener('click', () => {
+            openModal('reactivacion');
+            badge.classList.remove('active');
+        });
+    }, 3000);
+
+    /* ==========================================
        INITIALIZATION
        ========================================== */
     function init() {
