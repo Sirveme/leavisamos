@@ -409,6 +409,13 @@ ul {
     cursor: pointer;
     border: none;
     white-space: nowrap;
+    overflow: visible; /* Fix para SVG cortados */
+}
+
+.btn svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
 }
 
 .btn-primary {
