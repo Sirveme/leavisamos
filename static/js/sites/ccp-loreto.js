@@ -38,30 +38,41 @@
 
         resize() {
             const hero = document.querySelector('.hero');
-            if (hero) {
-                this.canvas.width = hero.offsetWidth;
-                this.canvas.height = hero.offsetHeight;
-            } else {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
-            // Forzar re-render
-            this.canvas.style.width = '100%';
-            this.canvas.style.height = '100%';
+            const width = hero ? hero.offsetWidth : window.innerWidth;
+            const height = hero ? hero.offsetHeight : window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            
+            // Set canvas internal dimensions (accounting for device pixel ratio)
+            this.canvas.width = width * dpr;
+            this.canvas.height = height * dpr;
+            
+            // Set canvas visual dimensions
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
+            
+            // Scale context to match device pixel ratio
+            this.ctx.scale(dpr, dpr);
+            
+            console.log('Canvas resized:', width, 'x', height, 'DPR:', dpr);
         }
 
         createParticles() {
             this.particles = [];
+            // Use visual dimensions, not internal canvas dimensions
+            const width = this.canvas.width / (window.devicePixelRatio || 1);
+            const height = this.canvas.height / (window.devicePixelRatio || 1);
+            
             for (let i = 0; i < this.particleCount; i++) {
                 this.particles.push({
-                    x: Math.random() * this.canvas.width,
-                    y: Math.random() * this.canvas.height,
+                    x: Math.random() * width,
+                    y: Math.random() * height,
                     vx: (Math.random() - 0.5) * 0.5,
                     vy: (Math.random() - 0.5) * 0.5,
                     size: Math.random() * 2 + 1,
                     opacity: Math.random() * 0.5 + 0.2
                 });
             }
+            console.log('Created', this.particleCount, 'particles');
         }
 
         drawParticle(particle) {
@@ -85,6 +96,10 @@
         }
 
         updateParticle(particle) {
+            // Use visual dimensions for boundaries
+            const width = this.canvas.width / (window.devicePixelRatio || 1);
+            const height = this.canvas.height / (window.devicePixelRatio || 1);
+            
             particle.x += particle.vx;
             particle.y += particle.vy;
 
@@ -100,9 +115,9 @@
                 particle.vy -= Math.sin(angle) * force * 0.2;
             }
 
-            // Boundary check
-            if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
-            if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+            // Boundary check with visual dimensions
+            if (particle.x < 0 || particle.x > width) particle.vx *= -1;
+            if (particle.y < 0 || particle.y > height) particle.vy *= -1;
 
             // Velocity dampening
             particle.vx *= 0.99;
@@ -110,7 +125,11 @@
         }
 
         animate() {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            // Use visual dimensions for clearing
+            const width = this.canvas.width / (window.devicePixelRatio || 1);
+            const height = this.canvas.height / (window.devicePixelRatio || 1);
+            
+            this.ctx.clearRect(0, 0, width, height);
 
             // Update and draw particles
             this.particles.forEach((particle, i) => {
@@ -413,8 +432,16 @@
                 // Force canvas dimensions before initializing
                 const hero = document.querySelector('.hero');
                 if (hero) {
-                    particlesCanvas.width = hero.offsetWidth;
-                    particlesCanvas.height = hero.offsetHeight;
+                    const dpr = window.devicePixelRatio || 1;
+                    const width = hero.offsetWidth;
+                    const height = hero.offsetHeight;
+                    
+                    particlesCanvas.width = width * dpr;
+                    particlesCanvas.height = height * dpr;
+                    particlesCanvas.style.width = width + 'px';
+                    particlesCanvas.style.height = height + 'px';
+                    
+                    console.log('Canvas initialized:', width, 'x', height, 'DPR:', dpr);
                 }
                 new ParticlesAnimation(particlesCanvas);
             }
