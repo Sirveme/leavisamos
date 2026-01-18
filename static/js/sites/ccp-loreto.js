@@ -1,13 +1,54 @@
 /**
- * CCPL - Colegio de Contadores Públicos de Loreto
- * Amazon Rainforest Effect: Day/Night Cycle System
- * Hojas + Luciérnagas + Mariposas Morpho
- * Inspired by Iquitos, Loreto - Amazonía Peruana
+ * CCPL - Sistema completo
+ * Hojas + Luciérnagas + Mariposas + Menú + Modales
  */
+
+console.log('🌿 CCPL Script iniciando...');
 
 (function() {
     'use strict';
 
+    /* DEBUG: Verificar que canvas existe */
+    window.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('amazonCanvas');
+        console.log('Canvas encontrado:', canvas ? 'SÍ ✓' : 'NO ✗');
+        if (canvas) {
+            console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+        }
+    });
+
+    /* ==========================================
+       MENU FUNCTIONS
+       ========================================== */
+    window.toggleMenu = function() {
+        const overlay = document.getElementById('menuOverlay');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeMenu = function() {
+        const overlay = document.getElementById('menuOverlay');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    window.scrollToSection = function(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            closeMenu();
+        }
+    };
+
+    window.focusSearch = function() {
+        const searchWrapper = document.getElementById('searchWrapper');
+        const searchInput = document.getElementById('searchInput');
+        if (searchWrapper && searchInput) {
+            searchWrapper.classList.add('active');
+            setTimeout(() => searchInput.focus(), 300);
+            closeMenu();
+        }
+    };
     /* ==========================================
        DAY/NIGHT CYCLE SYSTEM
        ========================================== */
