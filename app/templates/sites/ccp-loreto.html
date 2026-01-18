@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,19 +12,98 @@
     <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="/static/css/sites/ccp-loreto.css">
     
-    <!-- Preconnect para fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Floating Menu Button -->
+    <button class="menu-float-btn" id="menuFloatBtn" onclick="toggleMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+
+    <!-- Floating Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()">
+        <nav class="menu-content" onclick="event.stopPropagation()">
+            <button class="menu-close" onclick="closeMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <div class="menu-logo">
+                <img src="/static/img/logo-ccpl.png" alt="CCPL">
+                <h3>Menú Principal</h3>
+            </div>
+            
+            <div class="menu-links">
+                <a href="#hero" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    Inicio
+                </a>
+                <a href="#servicios" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Servicios
+                </a>
+                <a href="#junta" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Junta Directiva
+                </a>
+                <a href="#comunicados" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Comunicados
+                    <span class="menu-badge">Nuevo</span>
+                </a>
+                <a href="#capacitaciones" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Capacitaciones
+                </a>
+                <a href="#contacto" onclick="closeMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    Contacto
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Notification Badge -->
+    <div class="notification-badge active" id="notificationBadge" onclick="scrollToSection('comunicados')">
+        <span class="badge-pulse"></span>
+        <span class="badge-icon">📢</span>
+        <span class="badge-text">Nuevo comunicado</span>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero" id="hero">
         <canvas class="amazon-canvas" id="amazonCanvas"></canvas>
         <div class="hero-gradient"></div>
         
         <div class="hero-content">
-            <img src="/static/img/logo-ccpl.png" alt="CCPL Logo" class="hero-logo">
+            <img src="/static/img/logo-ccpl.png" alt="CCPL Logo" class="hero-logo" id="heroLogo">
             
             <div class="hero-text">
                 <h1 class="hero-title">
@@ -45,17 +122,194 @@
         </div>
     </section>
 
+    <!-- Services Section -->
+    <section class="section" id="servicios">
+        <div class="container">
+            <h2 class="section-title">Nuestros Servicios</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📄</div>
+                    <h3>Certificado de Habilidad</h3>
+                    <p>Obtén tu certificado de forma rápida y segura.</p>
+                    <button class="btn-service" onclick="openModal('certificado')">Solicitar</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">💳</div>
+                    <h3>Pagos en Línea</h3>
+                    <p>Paga tu cuota mensual de S/. 20 fácilmente.</p>
+                    <button class="btn-service" onclick="openModal('pagos')">Pagar ahora</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">📚</div>
+                    <h3>Capacitaciones</h3>
+                    <p>Actualízate con nuestros cursos y talleres.</p>
+                    <button class="btn-service" onclick="scrollToSection('capacitaciones')">Ver más</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">🔍</div>
+                    <h3>Consulta de Habilidad</h3>
+                    <p>Verifica el estado de cualquier contador.</p>
+                    <button class="btn-service" onclick="focusSearch()">Buscar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Junta Directiva Section -->
+    <section class="section section-dark" id="junta">
+        <div class="container">
+            <h2 class="section-title">Consejo Directivo 2024-2025</h2>
+            <p class="section-subtitle">Gestión comprometida con la transparencia y el servicio</p>
+            
+            <div class="directiva-grid">
+                <div class="directivo-card" onclick="openModal('directivo')">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Decano</h3>
+                    <p class="directivo-name">Nombre del Decano</p>
+                </div>
+                
+                <div class="directivo-card" onclick="openModal('directivo')">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Vicedecano</h3>
+                    <p class="directivo-name">Nombre del Vicedecano</p>
+                </div>
+                
+                <div class="directivo-card" onclick="openModal('directivo')">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Secretario</h3>
+                    <p class="directivo-name">Nombre del Secretario</p>
+                </div>
+                
+                <div class="directivo-card" onclick="openModal('directivo')">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Tesorero</h3>
+                    <p class="directivo-name">Nombre del Tesorero</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comunicados Section -->
+    <section class="section" id="comunicados">
+        <div class="container">
+            <h2 class="section-title">Comunicados Oficiales</h2>
+            
+            <div class="comunicados-list">
+                <div class="comunicado-item nuevo">
+                    <span class="comunicado-badge">Nuevo</span>
+                    <div class="comunicado-content">
+                        <h3>Convocatoria Asamblea General 2025</h3>
+                        <p class="comunicado-date">15 de enero, 2025</p>
+                        <p>Se convoca a todos los miembros a la Asamblea General...</p>
+                        <button class="btn-link" onclick="openModal('comunicado')">Leer más →</button>
+                    </div>
+                </div>
+                
+                <div class="comunicado-item">
+                    <div class="comunicado-content">
+                        <h3>Actualización de Cuotas 2025</h3>
+                        <p class="comunicado-date">10 de enero, 2025</p>
+                        <p>Informamos que la cuota se mantiene en S/. 20 mensuales...</p>
+                        <button class="btn-link" onclick="openModal('comunicado')">Leer más →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Capacitaciones Section -->
+    <section class="section section-dark" id="capacitaciones">
+        <div class="container">
+            <h2 class="section-title">Próximas Capacitaciones</h2>
+            
+            <div class="capacitaciones-grid">
+                <div class="capacitacion-card">
+                    <div class="capacitacion-date">
+                        <span class="date-day">25</span>
+                        <span class="date-month">ENE</span>
+                    </div>
+                    <div class="capacitacion-info">
+                        <h3>NIIF Actualizadas 2025</h3>
+                        <p>📍 Auditorio CCPL • ⏰ 18:00 hrs</p>
+                        <button class="btn-link">Inscribirse →</button>
+                    </div>
+                </div>
+                
+                <div class="capacitacion-card">
+                    <div class="capacitacion-date">
+                        <span class="date-day">30</span>
+                        <span class="date-month">ENE</span>
+                    </div>
+                    <div class="capacitacion-info">
+                        <h3>Declaración de Impuestos 2025</h3>
+                        <p>📍 Virtual • ⏰ 19:00 hrs</p>
+                        <button class="btn-link">Inscribirse →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto Section -->
+    <section class="section" id="contacto">
+        <div class="container">
+            <h2 class="section-title">Contáctanos</h2>
+            
+            <div class="contacto-grid">
+                <div class="contacto-item">
+                    <div class="contacto-icon">📍</div>
+                    <h3>Dirección</h3>
+                    <p>Jr. [Dirección completa]<br>Iquitos, Loreto, Perú</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">📞</div>
+                    <h3>Teléfono</h3>
+                    <p>+51 979 169 813</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">📧</div>
+                    <h3>Email</h3>
+                    <p>contacto@ccploreto.org.pe</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">⏰</div>
+                    <h3>Horario</h3>
+                    <p>Lunes a Viernes<br>8:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Colegio de Contadores Públicos de Loreto. Todos los derechos reservados.</p>
+            <p>60 años sirviendo a la región amazónica (1965-2025)</p>
+        </div>
+    </footer>
+
     <!-- Bottom Bar (Sticky) -->
     <nav class="bottom-bar" id="bottomBar">
         <div class="bottom-bar-content">
-            <!-- Logo -->
             <div class="bottom-logo">
                 <img src="/static/img/logo-ccpl.png" alt="CCPL">
             </div>
             
-            <!-- Buttons -->
             <div class="bottom-buttons">
-                <!-- Certificado -->
                 <button class="bottom-btn" onclick="openModal('certificado')" data-tooltip="Certificado de Habilidad">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -65,7 +319,6 @@
                     <span class="bottom-btn-text">Certificado</span>
                 </button>
                 
-                <!-- Pagos -->
                 <button class="bottom-btn btn-highlight" onclick="openModal('pagos')" data-tooltip="Pagar Cuota Mensual">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -74,7 +327,6 @@
                     <span class="bottom-btn-text">Pagar S/20</span>
                 </button>
                 
-                <!-- Búsqueda -->
                 <div class="search-container">
                     <button class="bottom-btn" id="searchToggle" data-tooltip="Buscar Contador">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,8 +341,7 @@
                     </div>
                 </div>
                 
-                <!-- Comando de Voz -->
-                <button class="bottom-btn" onclick="openModal('voice')" data-tooltip="Comando de Voz">
+                <button class="bottom-btn" onclick="openModal('voice')" data-tooltip="Comando de Voz (Próximamente)">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -112,29 +363,10 @@
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
-            <div class="modal-content" id="modalContent">
-                <!-- Content injected by JS -->
-            </div>
+            <div class="modal-content" id="modalContent"></div>
         </div>
     </div>
 
-    <!-- Notification Badge (Hidden by default) -->
-    <div class="notification-badge" id="notificationBadge">
-        <span class="badge-icon">📢</span>
-        <span class="badge-text">Nuevo comunicado</span>
-    </div>
-
-    <!-- Scripts -->
     <script src="/static/js/sites/ccp-loreto.js"></script>
-    
-    <!-- PWA Install Prompt -->
-    <script>
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Show install button if needed
-        });
-    </script>
 </body>
 </html>
