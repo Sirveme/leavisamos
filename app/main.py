@@ -1,40 +1,84 @@
+import json
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, RedirectResponse
-from .database import engine, Base
+from sqlalchemy.orm import Session
+
+from .database import engine, SessionLocal
+from .models import Organization
+from .config import redis_client, DEFAULT_THEME, THEMES
+# Importamos todos los routers
 from .routers import auth, dashboard, ws, api, admin, security, pets, finance, services, partners, directory
-from .config import THEMES
 
-# Base.metadata.create_all(bind=engine) # Descomentar solo si usas SQLite local
-
-app = FastAPI(title="NotiSAAS")
+app = FastAPI(title="Multi-Tenant SaaS")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
-# --- MIDDLEWARE CAMALEÓN (Detecta el dominio) ---
+# --- MIDDLEWARE INTELIGENTE (Redis + DB) ---
 @app.middleware("http")
-async def add_domain_context(request: Request, call_next):
-    host = request.headers.get("host", "")
+async def tenant_middleware(request: Request, call_next):
+    host = request.headers.get("host", "").lower()
+    hostname = host.split(":")[0]
+    org_data = None
     
-    # LÓGICA DE CAMUFLAJE
-    if "duilio.store" in host: 
-        # Forzamos que este dominio sea SIEMPRE el Colegio de Contadores
-        # (Aunque en la BD el colegio tenga otro slug, aquí lo forzamos visualmente)
+    # 1. Consultar Caché (Redis)
+    if redis_client:
+        try:
+            cached_org = redis_client.get(f"tenant:{hostname}")
+            if cached_org:
+                org_data = json.loads(cached_org)
+        except Exception:
+            pass
+
+    # 2. Consultar BD (Si no hay caché)
+    if not org_data:
+        db = SessionLocal()
+        try:
+            slug_to_search = None
+            
+            # --- REGLAS DE ENRUTAMIENTO ---
+            if "ccploreto" in hostname or "duilio.store" in hostname:
+                slug_to_search = "ccp-loreto"
+            elif "leavisamos" in hostname:
+                slug_to_search = "las-palmeras"
+            elif "localhost" in hostname or "127.0.0.1" in hostname:
+                slug_to_search = "las-palmeras" # Default Local (Cámbialo si quieres probar el otro)
+            
+            if slug_to_search:
+                org = db.query(Organization).filter(Organization.slug == slug_to_search).first()
+                if org:
+                    org_data = {
+                        "id": org.id,
+                        "name": org.name,
+                        "type": org.type,
+                        "slug": org.slug,
+                        "theme_color": org.theme_color,
+                        "logo_url": org.logo_url,
+                        "config": org.config
+                    }
+                    if redis_client:
+                        redis_client.setex(f"tenant:{hostname}", 600, json.dumps(org_data))
+        finally:
+            db.close()
+
+    # 3. Inyectar en Request
+    if org_data:
+        request.state.org = org_data
         request.state.theme = {
-            "site_name": "CCP Loreto Digital",
-            "primary_color": "#1e3a8a", # Azul Institucional
-            "logo_icon": "ph-books",
-            "tone": "formal",
-            "hero_text": "Gestión del Agremiado"
+            "site_name": org_data["name"],
+            "primary_color": org_data["theme_color"],
+            "logo": org_data["logo_url"],
+            "tone": "formal" if org_data["type"] == "colegio_prof" else "friendly",
+            "modules": org_data["config"].get("modules", {})
         }
-    elif "notificado.pro" in host: 
-        request.state.theme = THEMES["notificado"]
     else:
-        request.state.theme = THEMES["leavisamos"] # Default para condominios
-    
-    return await call_next(request)
+        request.state.org = None
+        request.state.theme = DEFAULT_THEME
+
+    response = await call_next(request)
+    return response
 
 # --- RUTAS ---
 app.include_router(auth.router)
@@ -49,6 +93,7 @@ app.include_router(services.router)
 app.include_router(partners.router)
 app.include_router(directory.router)
 
+# --- RUTAS BASE ---
 @app.get("/service-worker.js")
 async def get_service_worker():
     return FileResponse("static/service-worker.js", media_type="application/javascript")
@@ -57,30 +102,25 @@ async def get_service_worker():
 async def get_manifest():
     return FileResponse("static/manifest.json", media_type="application/json")
 
-# LOGIN (Pasamos el tema al template)
 @app.get("/")
 async def home(request: Request):
-    return templates.TemplateResponse("pages/login.html", {
-        "request": request,
-        "theme": request.state.theme # <--- IMPORTANTE
-    })
-
-@app.get("/")
-async def home(request: Request):
-    # Verificar si hay cookie de sesión válida
+    # Si hay cookie, ir al dashboard
     token = request.cookies.get("access_token")
     if token:
-        # (Aquí iría tu lógica de validación de token)
-        # Si es válido, redirige al dashboard
         return RedirectResponse(url="/dashboard")
     
-    # Si no, muestra la Landing Page de Venta
-    return templates.TemplateResponse("landing/index.html", {"request": request})
+    # Si no hay Org identificada, mostrar Landing de Venta
+    if not getattr(request.state, "org", None):
+        return templates.TemplateResponse("landing/resumen.html", {"request": request})
 
+    # Si hay Org, mostrar Login con su marca
+    return templates.TemplateResponse("pages/login.html", {
+        "request": request,
+        "theme": request.state.theme
+    })
 
 @app.get("/resumen")
 async def resumen(request: Request):
-    # Verificar si hay cookie de sesión válida
     return templates.TemplateResponse("landing/resumen.html", {"request": request})
 
 @app.get("/demo/ads")
