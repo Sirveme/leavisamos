@@ -233,7 +233,7 @@ ul {
 .hero {
     position: relative;
     min-height: 100vh;
-    min-height: 100svh;
+    min-height: 100svh; /* Safari mobile fix */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,11 +243,15 @@ ul {
 
 .particles-canvas {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100% !important;
     height: 100% !important;
+    z-index: 1;
     display: block;
     pointer-events: auto;
 }
+
 .hero-gradient {
     position: absolute;
     top: 0;
@@ -257,6 +261,7 @@ ul {
     background: var(--gradient-hero);
     z-index: 2;
     animation: gradientShift 15s ease infinite;
+    pointer-events: none;
 }
 
 @keyframes gradientShift {
@@ -269,11 +274,13 @@ ul {
     z-index: 3;
     text-align: center;
     color: white;
+    pointer-events: none;
 }
 
 .hero-text {
     max-width: 900px;
     margin: 0 auto;
+    pointer-events: auto;
 }
 
 .hero-title {
@@ -1212,6 +1219,4 @@ section {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-
 }
-
