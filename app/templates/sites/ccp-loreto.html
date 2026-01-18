@@ -11,10 +11,6 @@
     <link rel="apple-touch-icon" href="/static/img/icon-192.png">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="/static/css/sites/ccp-loreto.css">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- TOP BAR FIJA -->
@@ -53,7 +49,7 @@
             </div>
             
             <div class="menu-links">
-                <a href="#directivos" onclick="closeMenu()">
+                <a href="#directivos" onclick="scrollToSection('directivos')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -62,35 +58,35 @@
                     </svg>
                     Junta Directiva
                 </a>
-                <a href="#transparencia" onclick="closeMenu()">
+                <a href="#transparencia" onclick="scrollToSection('transparencia')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
                     </svg>
                     Transparencia
                 </a>
-                <a href="#club" onclick="closeMenu()">
+                <a href="#club" onclick="scrollToSection('club')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="M12 6v6l4 2"></path>
                     </svg>
                     Club de Contadores
                 </a>
-                <a href="#cursos" onclick="closeMenu()">
+                <a href="#cursos" onclick="scrollToSection('cursos')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                     </svg>
                     Capacitaciones
                 </a>
-                <a href="#comunicados" onclick="closeMenu()">
+                <a href="#comunicados" onclick="scrollToSection('comunicados')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     Comunicados
                     <span class="menu-badge">Nuevo</span>
                 </a>
-                <a href="#contacto" onclick="closeMenu()">
+                <a href="#contacto" onclick="scrollToSection('contacto')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
@@ -129,46 +125,304 @@
         </div>
     </section>
 
-    <!-- Secciones placeholder -->
-    <section class="section" id="directivos">
+    <!-- SERVICIOS -->
+    <section class="section" id="servicios">
         <div class="container">
-            <h2 class="section-title">Junta Directiva 2024-2025</h2>
-            <p class="section-subtitle">Gestión comprometida con la transparencia</p>
+            <h2 class="section-title">Nuestros Servicios</h2>
+            <p class="section-subtitle">Atención profesional para todos nuestros colegiados</p>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📄</div>
+                    <h3>Certificado de Habilidad</h3>
+                    <p>Obtén tu certificado de forma rápida y segura. Válido para ejercer la profesión contable.</p>
+                    <button class="btn-service" onclick="window.location.href='/login'">Solicitar</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">💳</div>
+                    <h3>Pagos en Línea</h3>
+                    <p>Paga tu cuota mensual de S/. 20 fácilmente desde cualquier dispositivo.</p>
+                    <button class="btn-service" onclick="window.location.href='/login'">Pagar ahora</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">📚</div>
+                    <h3>Capacitaciones</h3>
+                    <p>Actualízate con nuestros cursos y talleres especializados para contadores.</p>
+                    <button class="btn-service" onclick="scrollToSection('cursos')">Ver más</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">🔍</div>
+                    <h3>Consulta de Habilidad</h3>
+                    <p>Verifica el estado de habilidad de cualquier contador público colegiado.</p>
+                    <button class="btn-service" onclick="openSearchModal()">Buscar</button>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="section section-dark" id="transparencia">
+    <!-- JUNTA DIRECTIVA -->
+    <section class="section section-dark" id="directivos">
+        <div class="container">
+            <h2 class="section-title">Consejo Directivo 2024-2025</h2>
+            <p class="section-subtitle">Gestión comprometida con la transparencia y el servicio</p>
+            
+            <div class="directiva-grid">
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Decano</h3>
+                    <p class="directivo-name">CPC Juan Carlos Pérez</p>
+                </div>
+                
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Vicedecano</h3>
+                    <p class="directivo-name">CPC María Elena Ruiz</p>
+                </div>
+                
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Secretario</h3>
+                    <p class="directivo-name">CPC Roberto Vargas</p>
+                </div>
+                
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Tesorero</h3>
+                    <p class="directivo-name">CPC Carmen López</p>
+                </div>
+                
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Director I</h3>
+                    <p class="directivo-name">CPC Luis Fernández</p>
+                </div>
+                
+                <div class="directivo-card">
+                    <div class="directivo-img">
+                        <div class="img-placeholder">👤</div>
+                    </div>
+                    <h3>Director II</h3>
+                    <p class="directivo-name">CPC Ana García</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRANSPARENCIA -->
+    <section class="section" id="transparencia">
         <div class="container">
             <h2 class="section-title">Transparencia</h2>
             <p class="section-subtitle">Información pública y rendición de cuentas</p>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📊</div>
+                    <h3>Estados Financieros</h3>
+                    <p>Balance general y estado de resultados actualizado mensualmente.</p>
+                    <button class="btn-service">Ver documentos</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">📋</div>
+                    <h3>Actas y Acuerdos</h3>
+                    <p>Acceso a las actas de las sesiones del Consejo Directivo.</p>
+                    <button class="btn-service">Ver actas</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">👥</div>
+                    <h3>Padrón de Miembros</h3>
+                    <p>Listado oficial de contadores colegiados hábiles e inhábiles.</p>
+                    <button class="btn-service">Consultar</button>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">⚖️</div>
+                    <h3>Normativa Interna</h3>
+                    <p>Estatutos, reglamentos y código de ética profesional.</p>
+                    <button class="btn-service">Ver normativa</button>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="section" id="club">
+    <!-- CLUB -->
+    <section class="section section-dark" id="club">
         <div class="container">
             <h2 class="section-title">Club de Contadores</h2>
             <p class="section-subtitle">Beneficios exclusivos para miembros</p>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🎓</div>
+                    <h3>Capacitación Continua</h3>
+                    <p>Acceso a cursos, seminarios y conferencias con tarifas especiales.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">🤝</div>
+                    <h3>Networking Profesional</h3>
+                    <p>Eventos y actividades para fortalecer vínculos entre colegas.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">📚</div>
+                    <h3>Biblioteca Digital</h3>
+                    <p>Recursos, libros y publicaciones especializadas en contabilidad.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">💼</div>
+                    <h3>Bolsa de Trabajo</h3>
+                    <p>Oportunidades laborales exclusivas para miembros del colegio.</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="section section-dark" id="cursos">
+    <!-- CAPACITACIONES -->
+    <section class="section" id="cursos">
         <div class="container">
-            <h2 class="section-title">Capacitaciones</h2>
+            <h2 class="section-title">Próximas Capacitaciones</h2>
             <p class="section-subtitle">Actualización profesional continua</p>
+            
+            <div class="capacitaciones-grid">
+                <div class="capacitacion-card">
+                    <div class="capacitacion-date">
+                        <div class="date-day">25</div>
+                        <div class="date-month">ENE</div>
+                    </div>
+                    <div class="capacitacion-info">
+                        <h3>NIIF Actualizadas 2025</h3>
+                        <p>Nuevas normas internacionales de información financiera y su aplicación práctica.</p>
+                        <p><strong>Modalidad:</strong> Virtual • <strong>Duración:</strong> 8 horas</p>
+                    </div>
+                </div>
+                
+                <div class="capacitacion-card">
+                    <div class="capacitacion-date">
+                        <div class="date-day">10</div>
+                        <div class="date-month">FEB</div>
+                    </div>
+                    <div class="capacitacion-info">
+                        <h3>Fiscalización Tributaria</h3>
+                        <p>Procedimientos de fiscalización de SUNAT y estrategias de defensa fiscal.</p>
+                        <p><strong>Modalidad:</strong> Presencial • <strong>Duración:</strong> 16 horas</p>
+                    </div>
+                </div>
+                
+                <div class="capacitacion-card">
+                    <div class="capacitacion-date">
+                        <div class="date-day">05</div>
+                        <div class="date-month">MAR</div>
+                    </div>
+                    <div class="capacitacion-info">
+                        <h3>Auditoría Forense</h3>
+                        <p>Técnicas de investigación contable y prevención de fraudes corporativos.</p>
+                        <p><strong>Modalidad:</strong> Híbrida • <strong>Duración:</strong> 24 horas</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="section" id="comunicados">
+    <!-- COMUNICADOS -->
+    <section class="section section-dark" id="comunicados">
         <div class="container">
             <h2 class="section-title">Comunicados Oficiales</h2>
-            <p class="section-subtitle">Mantente informado</p>
+            <p class="section-subtitle">Mantente informado de las últimas novedades</p>
+            
+            <div class="comunicados-list">
+                <div class="comunicado-item nuevo">
+                    <span class="comunicado-badge">Nuevo</span>
+                    <div class="comunicado-content">
+                        <h3>Convocatoria Asamblea General Ordinaria</h3>
+                        <p class="comunicado-date">15 de Enero, 2026</p>
+                        <p>Se convoca a todos los miembros hábiles a la Asamblea General Ordinaria que se realizará el 28 de Enero del 2026 a las 6:00 PM en el auditorio del colegio.</p>
+                        <button class="btn-link">Leer más →</button>
+                    </div>
+                </div>
+                
+                <div class="comunicado-item">
+                    <div class="comunicado-content">
+                        <h3>Nuevas Tarifas de Honorarios Profesionales</h3>
+                        <p class="comunicado-date">08 de Enero, 2026</p>
+                        <p>El Consejo Directivo ha aprobado la actualización de las tarifas mínimas referenciales de honorarios profesionales para el ejercicio 2026.</p>
+                        <button class="btn-link">Leer más →</button>
+                    </div>
+                </div>
+                
+                <div class="comunicado-item">
+                    <div class="comunicado-content">
+                        <h3>Cronograma de Capacitaciones Primer Semestre</h3>
+                        <p class="comunicado-date">20 de Diciembre, 2025</p>
+                        <p>Publicamos el calendario completo de cursos, seminarios y talleres programados para el primer semestre del 2026.</p>
+                        <button class="btn-link">Leer más →</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
+
+    <!-- CONTACTO -->
+    <section class="section" id="contacto">
+        <div class="container">
+            <h2 class="section-title">Contáctanos</h2>
+            <p class="section-subtitle">Estamos para servirte</p>
+            
+            <div class="contacto-grid">
+                <div class="contacto-item">
+                    <div class="contacto-icon">📍</div>
+                    <h3>Dirección</h3>
+                    <p>Jr. Próspero 123<br>Iquitos, Loreto<br>Perú</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">📞</div>
+                    <h3>Teléfono</h3>
+                    <p>(065) 123-456<br>Cel: 987 654 321<br>Lun - Vie: 8am - 6pm</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">✉️</div>
+                    <h3>Email</h3>
+                    <p>info@ccploreto.org<br>secretaria@ccploreto.org<br>Respuesta en 24h</p>
+                </div>
+                
+                <div class="contacto-item">
+                    <div class="contacto-icon">🕐</div>
+                    <h3>Horario</h3>
+                    <p>Lunes a Viernes<br>8:00 AM - 1:00 PM<br>3:00 PM - 6:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Colegio de Contadores Públicos de Loreto. Todos los derechos reservados.</p>
+            <p>60 años al servicio de la profesión contable en la Amazonía Peruana</p>
+        </div>
+    </footer>
 
     <!-- BARRA INFERIOR -->
     <nav class="bottom-bar">
         <div class="bottom-bar-content">
-            <button class="bottom-btn" onclick="window.location.href='#directivos'">
+            <button class="bottom-btn" onclick="scrollToSection('directivos')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -176,7 +430,7 @@
                 <span class="bottom-btn-text">Directivos</span>
             </button>
             
-            <button class="bottom-btn" onclick="window.location.href='#transparencia'">
+            <button class="bottom-btn" onclick="scrollToSection('transparencia')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -184,7 +438,7 @@
                 <span class="bottom-btn-text">Transparencia</span>
             </button>
             
-            <button class="bottom-btn" onclick="window.location.href='#club'">
+            <button class="bottom-btn" onclick="scrollToSection('club')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M12 6v6l4 2"></path>
@@ -192,7 +446,7 @@
                 <span class="bottom-btn-text">Club</span>
             </button>
             
-            <button class="bottom-btn" onclick="window.location.href='#cursos'">
+            <button class="bottom-btn" onclick="scrollToSection('cursos')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
