@@ -37,8 +37,17 @@
         }
 
         resize() {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                this.canvas.width = hero.offsetWidth;
+                this.canvas.height = hero.offsetHeight;
+            } else {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            // Forzar re-render
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
         }
 
         createParticles() {
@@ -125,20 +134,39 @@
         }
 
         bindEvents() {
+            let resizeTimeout;
             window.addEventListener('resize', () => {
-                this.resize();
-                this.particleCount = this.getParticleCount();
-                this.createParticles();
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.resize();
+                    this.particleCount = this.getParticleCount();
+                    this.createParticles();
+                }, 250);
             });
 
             this.canvas.addEventListener('mousemove', (e) => {
-                this.mouse.x = e.clientX;
-                this.mouse.y = e.clientY;
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = e.clientX - rect.left;
+                this.mouse.y = e.clientY - rect.top;
             });
 
             this.canvas.addEventListener('mouseleave', () => {
-                this.mouse.x = 0;
-                this.mouse.y = 0;
+                this.mouse.x = -1000;
+                this.mouse.y = -1000;
+            });
+
+            // Touch events for mobile
+            this.canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const rect = this.canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                this.mouse.x = touch.clientX - rect.left;
+                this.mouse.y = touch.clientY - rect.top;
+            });
+
+            this.canvas.addEventListener('touchend', () => {
+                this.mouse.x = -1000;
+                this.mouse.y = -1000;
             });
         }
 
@@ -377,35 +405,44 @@
        INITIALIZATION
        ========================================== */
     function init() {
-        // Initialize particles animation
-        const particlesCanvas = document.getElementById('particlesCanvas');
-        if (particlesCanvas) {
-            new ParticlesAnimation(particlesCanvas);
-        }
+        // Wait a bit for layout to be fully calculated, especially on mobile
+        requestAnimationFrame(() => {
+            // Initialize particles animation
+            const particlesCanvas = document.getElementById('particlesCanvas');
+            if (particlesCanvas) {
+                // Force canvas dimensions before initializing
+                const hero = document.querySelector('.hero');
+                if (hero) {
+                    particlesCanvas.width = hero.offsetWidth;
+                    particlesCanvas.height = hero.offsetHeight;
+                }
+                new ParticlesAnimation(particlesCanvas);
+            }
 
-        // Initialize navbar
-        new Navbar();
+            // Initialize navbar
+            new Navbar();
 
-        // Initialize scroll animations
-        new ScrollAnimations();
+            // Initialize scroll animations
+            new ScrollAnimations();
 
-        // Initialize smooth scroll
-        initSmoothScroll();
+            // Initialize smooth scroll
+            initSmoothScroll();
 
-        // Initialize lazy loading
-        initLazyLoading();
+            // Initialize lazy loading
+            initLazyLoading();
 
-        // Initialize stats counter
-        initStatsCounter();
+            // Initialize stats counter
+            initStatsCounter();
 
-        // Performance logging (remove in production)
-        if (window.performance) {
-            window.addEventListener('load', () => {
-                const perfData = window.performance.timing;
-                const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-                console.log(`Page loaded in ${pageLoadTime}ms`);
-            });
-        }
+            // Performance logging (remove in production)
+            if (window.performance) {
+                window.addEventListener('load', () => {
+                    const perfData = window.performance.timing;
+                    const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                    console.log(`Page loaded in ${pageLoadTime}ms`);
+                });
+            }
+        });
     }
 
     // Run when DOM is ready
