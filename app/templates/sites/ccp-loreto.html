@@ -4,261 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Colegio de Contadores Públicos de Loreto - 60 Años</title>
-
-    <link rel="icon" type="image/png" href="/static/img/favicon.png">
-    <link rel="apple-touch-icon" href="/static/img/icon-192.png">
-    <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="/static/css/sites/ccp-loreto.css">
-
-    <style>
-        /* Estilos específicos para Hero Glassmorphism */
-        .hero-glass {
-            position: relative;
-            height: 100vh;
-            background: radial-gradient(circle at 20% 50%, rgba(26,95,58,0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(212,175,55,0.2) 0%, transparent 50%),
-                        linear-gradient(135deg, #0a1f1a 0%, #051410 100%);
-            overflow: hidden;
-        }
-
-        /* Canvas para partículas */
-        #particlesCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* Elementos glassmorphism flotantes */
-        .glass-shapes {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        .glass-shape {
-            position: absolute;
-            background: rgba(26, 95, 58, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            animation: floatGlass 20s ease-in-out infinite;
-        }
-
-        .glass-shape-1 {
-            width: 400px;
-            height: 400px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-        }
-
-        .glass-shape-2 {
-            width: 300px;
-            height: 300px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 5s;
-        }
-
-        .glass-shape-3 {
-            width: 250px;
-            height: 250px;
-            bottom: 20%;
-            left: 50%;
-            animation-delay: 10s;
-        }
-
-        @keyframes floatGlass {
-            0%, 100% {
-                transform: translate(0, 0) rotate(0deg);
-                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            }
-            25% {
-                transform: translate(20px, -20px) rotate(5deg);
-                border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
-            }
-            50% {
-                transform: translate(-20px, 20px) rotate(-5deg);
-                border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
-            }
-            75% {
-                transform: translate(10px, 10px) rotate(3deg);
-                border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%;
-            }
-        }
-
-        /* Card de vidrio para el contenido */
-        .glass-card {
-            position: relative;
-            z-index: 10;
-            background: rgba(10, 14, 20, 0.4);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 30px;
-            padding: 60px 50px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(212,175,55,0.1) 0%, transparent 50%);
-            border-radius: 30px;
-            pointer-events: none;
-        }
-
-        /* Orbes luminosos */
-        .orbs-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.4;
-            animation: pulseOrb 8s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%);
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(26,95,58,0.5) 0%, transparent 70%);
-            bottom: 30%;
-            right: 15%;
-            animation-delay: 4s;
-        }
-
-        .orb-3 {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(244,208,63,0.4) 0%, transparent 70%);
-            top: 50%;
-            right: 40%;
-            animation-delay: 2s;
-        }
-
-        @keyframes pulseOrb {
-            0%, 100% {
-                transform: scale(1) translateY(0);
-                opacity: 0.4;
-            }
-            50% {
-                transform: scale(1.2) translateY(-20px);
-                opacity: 0.6;
-            }
-        }
-
-        /* Partículas doradas flotantes */
-        .golden-particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 4;
-            pointer-events: none;
-        }
-
-        .golden-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--dorado);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--dorado);
-            animation: floatParticle 8s ease-in-out infinite;
-        }
-
-        .gp-1 { top: 10%; left: 20%; animation-delay: 0s; }
-        .gp-2 { top: 30%; left: 70%; animation-delay: 1s; }
-        .gp-3 { top: 50%; left: 40%; animation-delay: 2s; }
-        .gp-4 { top: 70%; left: 60%; animation-delay: 3s; }
-        .gp-5 { top: 20%; left: 90%; animation-delay: 4s; }
-        .gp-6 { top: 80%; left: 15%; animation-delay: 1.5s; }
-
-        @keyframes floatParticle {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-                opacity: 0.3;
-            }
-            50% {
-                transform: translateY(-30px) scale(1.5);
-                opacity: 1;
-            }
-        }
-
-        /* Ajustes para contenido en glass */
-        .hero-glass .hero-content {
-            padding: 0;
-        }
-
-        .hero-glass .badge-60 {
-            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
-        }
-
-        .hero-glass .btn-hero {
-            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .glass-card {
-                padding: 40px 30px;
-                margin: 0 20px;
-            }
-
-            .glass-shape {
-                opacity: 0.5;
-            }
-
-            .glass-shape-1 {
-                width: 250px;
-                height: 250px;
-            }
-
-            .glass-shape-2,
-            .glass-shape-3 {
-                width: 180px;
-                height: 180px;
-            }
-
-            .orb {
-                opacity: 0.3;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container-header">
             <div class="logo-wrapper">
-                <img src="/static/img/logo-ccpl.png" alt="CCPL" class="logo">
+                <img src="/static/img/logo-ccpl.png" alt="CCPL Logo" class="logo">
             </div>
             <nav class="nav-top">
                 <button class="btn-menu" id="menuBtn">
@@ -272,26 +25,79 @@
         </div>
     </header>
 
+    <!-- Menú Lateral Épico -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-overlay"></div>
+        <div class="side-menu-content">
+            <button class="side-menu-close" id="closeSideMenu">&times;</button>
+            <div class="side-menu-header">
+                <img src="https://ccploreto.org.pe/wp-content/uploads/2023/03/cropped-LOGO-CCPL-1-192x192.png" alt="CCPL" class="side-logo">
+                <h3>Menú Principal</h3>
+            </div>
+            <nav class="side-nav">
+                <a href="/" class="side-nav-item active">
+                    <span class="item-icon">🏠</span>
+                    <span class="item-text">Inicio</span>
+                </a>
+                <a href="/institucional/" class="side-nav-item">
+                    <span class="item-icon">🏛️</span>
+                    <span class="item-text">Institucional</span>
+                </a>
+                <a href="/colegiados/" class="side-nav-item premium">
+                    <span class="item-icon">👥</span>
+                    <span class="item-text">Colegiados</span>
+                    <span class="badge">Importante</span>
+                </a>
+                <a href="/capacitacion/" class="side-nav-item">
+                    <span class="item-icon">📚</span>
+                    <span class="item-text">Capacitación</span>
+                </a>
+                <a href="/comite-electoral/" class="side-nav-item">
+                    <span class="item-icon">🗳️</span>
+                    <span class="item-text">Comité Electoral</span>
+                </a>
+                <a href="/galeria/" class="side-nav-item">
+                    <span class="item-icon">📸</span>
+                    <span class="item-text">Galería de Imágenes</span>
+                </a>
+                <a href="/reglamento/" class="side-nav-item">
+                    <span class="item-icon">📋</span>
+                    <span class="item-text">Reglamento Interno</span>
+                </a>
+                <a href="/eventos/" class="side-nav-item">
+                    <span class="item-icon">📅</span>
+                    <span class="item-text">Eventos del Año</span>
+                </a>
+                <a href="#actualizar-datos" class="side-nav-item premium">
+                    <span class="item-icon">✏️</span>
+                    <span class="item-text">Actualiza tus datos</span>
+                    <span class="badge pulse-badge">Permanente</span>
+                </a>
+            </nav>
+            <div class="side-menu-footer">
+                <a href="https://www.facebook.com/ccploreto.oficial/" target="_blank" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="https://wa.me/51979169813" target="_blank" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section - Glassmorphism -->
     <section class="hero hero-glass">
-        <!-- Canvas para partículas animadas -->
         <canvas id="particlesCanvas"></canvas>
-
-        <!-- Orbes luminosos -->
         <div class="orbs-container">
             <div class="orb orb-1"></div>
             <div class="orb orb-2"></div>
             <div class="orb orb-3"></div>
         </div>
-
-        <!-- Formas de vidrio -->
         <div class="glass-shapes">
             <div class="glass-shape glass-shape-1"></div>
             <div class="glass-shape glass-shape-2"></div>
             <div class="glass-shape glass-shape-3"></div>
         </div>
-
-        <!-- Partículas doradas -->
         <div class="golden-particles">
             <div class="golden-particle gp-1"></div>
             <div class="golden-particle gp-2"></div>
@@ -300,16 +106,12 @@
             <div class="golden-particle gp-5"></div>
             <div class="golden-particle gp-6"></div>
         </div>
-
-        <!-- Fauna Amazónica -->
         <div class="fauna-container">
             <div class="bufeo bufeo-1"></div>
             <div class="bufeo bufeo-2"></div>
             <div class="tortuga tortuga-1"></div>
             <div class="tortuga tortuga-2"></div>
         </div>
-
-        <!-- Hojas flotantes -->
         <div class="leaves-container">
             <div class="leaf leaf-1"></div>
             <div class="leaf leaf-2"></div>
@@ -317,8 +119,7 @@
             <div class="leaf leaf-4"></div>
             <div class="leaf leaf-5"></div>
         </div>
-
-        <div class="hero-content" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+        <div class="hero-content">
             <div class="glass-card">
                 <div class="badge-60">60 AÑOS</div>
                 <h1 class="hero-title">
@@ -326,7 +127,7 @@
                     <span class="title-line">Públicos de Loreto</span>
                 </h1>
                 <p class="hero-subtitle">SIRVIENDO A LA REGIÓN</p>
-                <a href="#reactivate" class="btn-hero">Reactiva tu matrícula</a>
+                <button class="btn-hero" id="btnReactivaHero">Reactiva tu matrícula</button>
                 <div class="scroll-indicator">
                     <span>Desliza</span>
                     <div class="scroll-arrow"></div>
@@ -353,39 +154,234 @@
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section class="services-section">
+    <!-- Videos Section -->
+    <section class="videos-section">
         <div class="container">
-            <h2 class="section-title">Sectores donde servimos</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-video">
-                        <div class="video-thumb" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8c 100%)"></div>
-                        <span class="sector-tag">Sector Público</span>
+            <h2 class="section-title">Nuestra Labor en Video</h2>
+            <div class="videos-grid">
+                <div class="video-container video-horizontal">
+                    <div class="video-wrapper">
+                        <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-video-url=""></iframe>
+                        <div class="video-placeholder">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <p>Haz clic para cargar video</p>
+                        </div>
                     </div>
-                    <h3>Entidades Gubernamentales</h3>
+                    <h3>60 Años de Trayectoria</h3>
                 </div>
-                <div class="service-card">
-                    <div class="service-video">
-                        <div class="video-thumb" style="background: linear-gradient(135deg, #2d5a1e 0%, #4a8c2d 100%)"></div>
-                        <span class="sector-tag">Agroindustria</span>
+                <div class="video-container video-vertical">
+                    <div class="video-wrapper">
+                        <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-video-url=""></iframe>
+                        <div class="video-placeholder">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
                     </div>
-                    <h3>Sector Agrícola</h3>
+                    <h3>Eventos y Capacitaciones</h3>
                 </div>
-                <div class="service-card">
-                    <div class="service-video">
-                        <div class="video-thumb" style="background: linear-gradient(135deg, #5a1e2d 0%, #8c2d4a 100%)"></div>
-                        <span class="sector-tag">Comercio</span>
+                <div class="video-container video-vertical">
+                    <div class="video-wrapper">
+                        <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-video-url=""></iframe>
+                        <div class="video-placeholder">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
                     </div>
-                    <h3>Empresas Privadas</h3>
+                    <h3>Testimonios</h3>
                 </div>
-                <div class="service-card">
-                    <div class="service-video">
-                        <div class="video-thumb" style="background: linear-gradient(135deg, #1e5a4a 0%, #2d8c6f 100%)"></div>
-                        <span class="sector-tag">Turismo</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Convenios Section -->
+    <section class="convenios-section">
+        <div class="container">
+            <h2 class="section-title">Convenios Institucionales</h2>
+            <div class="convenios-tabs">
+                <button class="tab-btn active" data-category="salud">Salud</button>
+                <button class="tab-btn" data-category="educacion">Educación</button>
+                <button class="tab-btn" data-category="servicios">Servicios</button>
+                <button class="tab-btn" data-category="todos">Todos</button>
+            </div>
+            <div class="convenios-grid" id="conveniosGrid">
+                <!-- Salud -->
+                <div class="convenio-card" data-category="salud">
+                    <div class="convenio-icon">🏥</div>
+                    <h3>Clínica Emanuel</h3>
+                    <p class="sector">Salud</p>
+                    <p class="beneficio">15% desc. en consultas y análisis</p>
+                    <div class="convenio-info">
+                        <span>📍 Jr. Próspero 123</span>
+                        <span>📞 065-123456</span>
+                        <span>🕐 Lun-Sáb 8am-8pm</span>
                     </div>
-                    <h3>Hotelería y Servicios</h3>
                 </div>
+                <div class="convenio-card" data-category="salud">
+                    <div class="convenio-icon">🦷</div>
+                    <h3>Vidas Dent</h3>
+                    <p class="sector">Odontología</p>
+                    <p class="beneficio">20% desc. en tratamientos</p>
+                    <div class="convenio-info">
+                        <span>📍 Av. Abelardo 456</span>
+                        <span>📞 065-234567</span>
+                        <span>🕐 Lun-Vie 9am-7pm</span>
+                    </div>
+                </div>
+                <div class="convenio-card" data-category="salud">
+                    <div class="convenio-icon">👁️</div>
+                    <h3>Eyes Solution</h3>
+                    <p class="sector">Oftalmología</p>
+                    <p class="beneficio">10% desc. en lentes y consultas</p>
+                    <div class="convenio-info">
+                        <span>📍 Jr. Lima 789</span>
+                        <span>📞 065-345678</span>
+                        <span>🕐 Lun-Sáb 8am-6pm</span>
+                    </div>
+                </div>
+                <div class="convenio-card" data-category="salud">
+                    <div class="convenio-icon">🏥</div>
+                    <h3>Clínica Ana Stahl</h3>
+                    <p class="sector">Salud General</p>
+                    <p class="beneficio">15% desc. en servicios médicos</p>
+                    <div class="convenio-info">
+                        <span>📍 Av. La Marina 321</span>
+                        <span>📞 065-456789</span>
+                        <span>🕐 24 horas</span>
+                    </div>
+                </div>
+                <!-- Educación -->
+                <div class="convenio-card" data-category="educacion">
+                    <div class="convenio-icon">🎓</div>
+                    <h3>PUCP</h3>
+                    <p class="sector">Universidad</p>
+                    <p class="beneficio">Descuentos en diplomados</p>
+                    <div class="convenio-info">
+                        <span>📍 Virtual/Presencial</span>
+                        <span>📞 01-6262000</span>
+                        <span>🕐 Consultar programación</span>
+                    </div>
+                </div>
+                <div class="convenio-card" data-category="educacion">
+                    <div class="convenio-icon">🏫</div>
+                    <h3>Academia Intensity</h3>
+                    <p class="sector">Preparación</p>
+                    <p class="beneficio">10% desc. en cursos</p>
+                    <div class="convenio-info">
+                        <span>📍 Jr. Nauta 567</span>
+                        <span>📞 065-567890</span>
+                        <span>🕐 Lun-Sáb 3pm-9pm</span>
+                    </div>
+                </div>
+                <!-- Servicios -->
+                <div class="convenio-card" data-category="servicios">
+                    <div class="convenio-icon">💻</div>
+                    <h3>DS-CONT</h3>
+                    <p class="sector">Software Contable</p>
+                    <p class="beneficio">Precios especiales</p>
+                    <div class="convenio-info">
+                        <span>📍 Virtual</span>
+                        <span>📞 965-123456</span>
+                        <span>🕐 Soporte 24/7</span>
+                    </div>
+                </div>
+                <div class="convenio-card" data-category="servicios">
+                    <div class="convenio-icon">⛽</div>
+                    <h3>Loreto Perú</h3>
+                    <p class="sector">Combustible</p>
+                    <p class="beneficio">5% desc. en gasolina</p>
+                    <div class="convenio-info">
+                        <span>📍 Av. Quiñones</span>
+                        <span>📞 065-678901</span>
+                        <span>🕐 24 horas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alquiler Section -->
+    <section class="alquiler-section">
+        <div class="container">
+            <h2 class="section-title">Alquiler de Ambientes</h2>
+            <div class="alquiler-grid">
+                <div class="alquiler-card">
+                    <div class="alquiler-icon">🏊</div>
+                    <h3>Piscina</h3>
+                    <div class="precio">S/ 50<span>/hora</span></div>
+                    <ul class="horarios">
+                        <li>🕐 Lun-Vie: 6am-8pm</li>
+                        <li>🕐 Sáb-Dom: 7am-7pm</li>
+                    </ul>
+                    <button class="btn-reservar" data-ambiente="piscina">Reservar</button>
+                </div>
+                <div class="alquiler-card">
+                    <div class="alquiler-icon">⚽</div>
+                    <h3>Cancha de Fútbol</h3>
+                    <div class="precio">S/ 40<span>/hora</span></div>
+                    <ul class="horarios">
+                        <li>🕐 Lun-Vie: 5am-10pm</li>
+                        <li>🕐 Sáb-Dom: 6am-10pm</li>
+                    </ul>
+                    <button class="btn-reservar" data-ambiente="futbol">Reservar</button>
+                </div>
+                <div class="alquiler-card">
+                    <div class="alquiler-icon">🏐</div>
+                    <h3>Cancha de Vóley</h3>
+                    <div class="precio">S/ 35<span>/hora</span></div>
+                    <ul class="horarios">
+                        <li>🕐 Lun-Vie: 5am-10pm</li>
+                        <li>🕐 Sáb-Dom: 6am-10pm</li>
+                    </ul>
+                    <button class="btn-reservar" data-ambiente="voley">Reservar</button>
+                </div>
+            </div>
+            <div class="payment-info">
+                <h3>Métodos de Pago</h3>
+                <div class="payment-grid">
+                    <div class="payment-card">
+                        <strong>💳 Yape/Plin</strong>
+                        <p>979 169 813</p>
+                    </div>
+                    <div class="payment-card">
+                        <strong>🏦 BCP</strong>
+                        <p>N° 123-4567890-1-23</p>
+                    </div>
+                    <div class="payment-card">
+                        <strong>🏦 Banco de la Nación</strong>
+                        <p>N° 00-987-654321</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comunicados Section -->
+    <section class="comunicados-section">
+        <div class="container">
+            <h2 class="section-title">Últimos Comunicados</h2>
+            <div class="comunicados-grid">
+                <a href="/comunicado/comunicado-008-2025-ce/" class="comunicado-card">
+                    <div class="comunicado-fecha">15 Ene 2025</div>
+                    <h3>Comunicado N° 008-2025-CE</h3>
+                    <p>Proceso Electoral 2025 - Cronograma actualizado</p>
+                    <span class="read-more">Leer más →</span>
+                </a>
+                <a href="/comunicado/comunicado-007-2025-ce/" class="comunicado-card">
+                    <div class="comunicado-fecha">12 Ene 2025</div>
+                    <h3>Comunicado N° 007-2025-CE</h3>
+                    <p>Inscripción de listas para elecciones</p>
+                    <span class="read-more">Leer más →</span>
+                </a>
+                <a href="/comunicado/comunicado-n-006-2025/" class="comunicado-card">
+                    <div class="comunicado-fecha">08 Ene 2025</div>
+                    <h3>Comunicado N° 006-2025</h3>
+                    <p>Convocatoria a Asamblea General</p>
+                    <span class="read-more">Leer más →</span>
+                </a>
             </div>
         </div>
     </section>
@@ -426,7 +422,89 @@
         </button>
     </nav>
 
-    <!-- Modals -->
+    <!-- Modal Reactivación -->
+    <div class="modal" id="reactivacionModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-reactivacion">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Reactiva tu Colegiatura</h2>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="beneficios">Beneficios</button>
+                    <button class="tab" data-tab="requisitos">Requisitos</button>
+                    <button class="tab" data-tab="pagar">Pagar</button>
+                </div>
+                <div class="tab-content active" id="beneficios">
+                    <h3>🎁 Beneficios Especiales por 60 Aniversario</h3>
+                    <div class="beneficio-item">
+                        <div class="beneficio-icon">✅</div>
+                        <div>
+                            <h4>Condonación del 50% de deuda</h4>
+                            <p>Si te reactivas antes del 31 de Marzo 2025</p>
+                        </div>
+                    </div>
+                    <div class="beneficio-item">
+                        <div class="beneficio-icon">✅</div>
+                        <div>
+                            <h4>Facilidades de pago hasta 12 cuotas</h4>
+                            <p>Sin intereses adicionales</p>
+                        </div>
+                    </div>
+                    <div class="beneficio-item">
+                        <div class="beneficio-icon">✅</div>
+                        <div>
+                            <h4>Acceso inmediato a todos los convenios</h4>
+                            <p>19 convenios vigentes en salud, educación y servicios</p>
+                        </div>
+                    </div>
+                    <div class="plazo-especial">
+                        <h4>⏰ Plazos de Campaña:</h4>
+                        <ul>
+                            <li><strong>Hasta 31 Marzo:</strong> 50% condonación</li>
+                            <li><strong>Hasta 30 Junio:</strong> 30% condonación</li>
+                            <li><strong>Hasta 30 Sept:</strong> 15% condonación</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tab-content" id="requisitos">
+                    <h3>📋 Requisitos para Reactivación</h3>
+                    <ol class="requisitos-list">
+                        <li>Solicitud de reactivación dirigida al Decano</li>
+                        <li>Copia de DNI vigente</li>
+                        <li>Constancia de habilidad (se solicita en el Colegio)</li>
+                        <li>Declaración jurada de no tener deudas pendientes con otras instituciones</li>
+                        <li>Pago de cuota de reactivación (consultar monto según antigüedad)</li>
+                    </ol>
+                    <div class="nota-importante">
+                        <strong>💡 Nota:</strong> Todos los documentos pueden ser presentados de forma presencial o digital vía WhatsApp al 979 169 813
+                    </div>
+                </div>
+                <div class="tab-content" id="pagar">
+                    <h3>💳 Métodos de Pago</h3>
+                    <div class="metodos-pago">
+                        <div class="metodo-card">
+                            <h4>📱 Yape / Plin</h4>
+                            <p class="numero-grande">979 169 813</p>
+                            <p class="subtexto">Envía tu voucher al mismo número</p>
+                        </div>
+                        <div class="metodo-card">
+                            <h4>🏦 Transferencia Bancaria BCP</h4>
+                            <p class="numero-grande">123-4567890-1-23</p>
+                            <p class="subtexto">CCI: 00212312345678901230</p>
+                        </div>
+                        <div class="metodo-card">
+                            <h4>🏦 Banco de la Nación</h4>
+                            <p class="numero-grande">00-987-654321</p>
+                            <p class="subtexto">Envía voucher vía WhatsApp</p>
+                        </div>
+                    </div>
+                    <button class="btn-pago-online">Pagar en Línea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Consultas -->
     <div class="modal" id="consultasModal">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-consultas">
@@ -460,6 +538,7 @@
         </div>
     </div>
 
+    <!-- Modal Directivos -->
     <div class="modal" id="directivosModal">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-directivos">
@@ -467,46 +546,241 @@
             <h2 class="modal-title">Consejo Directivo 2024-2025</h2>
             <div class="directivos-grid">
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Decano</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#decano" class="ver-mas">Ver más →</a>
                 </div>
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Vice Decano</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#vicedecano" class="ver-mas">Ver más →</a>
                 </div>
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Director Secretario</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#secretario" class="ver-mas">Ver más →</a>
                 </div>
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Director Tesorero</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#tesorero" class="ver-mas">Ver más →</a>
                 </div>
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Vocal 1</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#vocal1" class="ver-mas">Ver más →</a>
                 </div>
                 <div class="directivo-card">
-                    <div class="directivo-photo"></div>
+                    <div class="directivo-photo" style="background-image: url('https://via.placeholder.com/150')"></div>
                     <h3>CPCC Nombre Apellido</h3>
                     <p class="cargo">Vocal 2</p>
-                    <a href="#" class="ver-mas">Ver más →</a>
+                    <a href="/consejo-directivo/#vocal2" class="ver-mas">Ver más →</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="/static/js/sites/ccp-loreto.js"></script>
-</body>
+    <!-- Modal Transparencia -->
+    <div class="modal" id="transparenciaModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-transparencia">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Portal de Transparencia</h2>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="indicadores">Indicadores Clave</button>
+                    <button class="tab" data-tab="resultados">Resultados Anuales</button>
+                    <button class="tab" data-tab="estadisticas">Estadísticas</button>
+                </div>
+                <div class="tab-content active" id="indicadores">
+                    <h3>📊 Indicadores de Gestión 2024</h3>
+                    <div class="indicadores-grid">
+                        <div class="indicador-card">
+                            <div class="indicador-icon">💰</div>
+                            <h4>Financieros</h4>
+                            <div class="indicador-valor">S/ 1.2M</div>
+                            <p class="indicador-desc">Ingresos totales</p>
+                            <div class="indicador-trend positive">+15% vs 2023</div>
+                        </div>
+                        <div class="indicador-card">
+                            <div class="indicador-icon">👥</div>
+                            <h4>Operativos</h4>
+                            <div class="indicador-valor">42%</div>
+                            <p class="indicador-desc">Tasa de colegiados activos</p>
+                            <div class="indicador-trend negative">-3% vs objetivo</div>
+                        </div>
+                        <div class="indicador-card">
+                            <div class="indicador-icon">📚</div>
+                            <h4>Capacitación</h4>
+                            <div class="indicador-valor">156</div>
+                            <p class="indicador-desc">Eventos realizados</p>
+                            <div class="indicador-trend positive">+24% vs 2023</div>
+                        </div>
+                        <div class="indicador-card">
+                            <div class="indicador-icon">🤝</div>
+                            <h4>Convenios</h4>
+                            <div class="indicador-valor">19</div>
+                            <p class="indicador-desc">Convenios activos</p>
+                            <div class="indicador-trend positive">+4 nuevos</div>
+                        </div>
+                    </div>
+                    <div class="meta-principal">
+                        <h4>🎯 Meta 2025: Recuperar 650 colegiados inactivos</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 18%">
+                                <span>117 reactivados (18%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="resultados">
+                    <h3>📈 Resultados Anuales</h3>
+                    <div class="resultados-comparativos">
+                        <table class="tabla-resultados">
+                            <thead>
+                                <tr>
+                                    <th>Año</th>
+                                    <th>Ingresos</th>
+                                    <th>Egresos</th>
+                                    <th>Colegiados</th>
+                                    <th>Eventos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024</td>
+                                    <td>S/ 1,200,000</td>
+                                    <td>S/ 980,000</td>
+                                    <td>950</td>
+                                    <td>156</td>
+                                </tr>
+                                <tr>
+                                    <td>2023</td>
+                                    <td>S/ 1,045,000</td>
+                                    <td>S/ 890,000</td>
+                                    <td>920</td>
+                                    <td>126</td>
+                                </tr>
+                                <tr>
+                                    <td>2022</td>
+                                    <td>S/ 950,000</td>
+                                    <td>S/ 820,000</td>
+                                    <td>895</td>
+                                    <td>98</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="/transparencia/" class="btn-ver-completo">Ver Informe Completo</a>
+                </div>
+                <div class="tab-content" id="estadisticas">
+                    <h3>📊 Estadísticas Mensuales 2024</h3>
+                    <div class="estadisticas-mensuales">
+                        <div class="chart-placeholder">
+                            <p>Gráfico de nuevos colegiados por mes</p>
+                            <div class="mini-chart">
+                                <div class="bar" style="height: 60%"></div>
+                                <div class="bar" style="height: 45%"></div>
+                                <div class="bar" style="height: 70%"></div>
+                                <div class="bar" style="height: 55%"></div>
+                                <div class="bar" style="height: 80%"></div>
+                                <div class="bar" style="height: 50%"></div>
+                                <div class="bar" style="height: 65%"></div>
+                                <div class="bar" style="height: 75%"></div>
+                                <div class="bar" style="height: 60%"></div>
+                                <div class="bar" style="height: 85%"></div>
+                                <div class="bar" style="height: 70%"></div>
+                                <div class="bar" style="height: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="stats-summary">
+                            <h4>Resumen Estadístico</h4>
+                            <ul>
+                                <li><strong>Promedio mensual:</strong> 8 nuevos colegiados</li>
+                                <li><strong>Mejor mes:</strong> Diciembre (15 nuevos)</li>
+                                <li><strong>Tasa de retención:</strong> 92%</li>
+                                <li><strong>Participación en eventos:</strong> 68%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Modal Reserva -->
+    <div class="modal" id="reservaModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-reserva">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Reservar Ambiente</h2>
+            <div class="reserva-form">
+                <div class="form-group">
+                    <label>Ambiente:</label>
+                    <select id="ambienteSelect">
+                        <option value="piscina">Piscina - S/ 50/hora</option>
+                        <option value="futbol">Cancha de Fútbol - S/ 40/hora</option>
+                        <option value="voley">Cancha de Vóley - S/ 35/hora</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha:</label>
+                    <input type="date" id="fechaReserva">
+                </div>
+                <div class="form-group">
+                    <label>Hora de inicio:</label>
+                    <select id="horaInicio">
+                        <option value="06:00">06:00</option>
+                        <option value="07:00">07:00</option>
+                        <option value="08:00">08:00</option>
+                        <option value="09:00">09:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="11:00">11:00</option>
+                        <option value="12:00">12:00</option>
+                        <option value="13:00">13:00</option>
+                        <option value="14:00">14:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option>
+                        <option value="17:00">17:00</option>
+                        <option value="18:00">18:00</option>
+                        <option value="19:00">19:00</option>
+                        <option value="20:00">20:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duración (horas):</label>
+                    <input type="number" id="duracion" min="1" max="4" value="1">
+                </div>
+                <div class="total-reserva">
+                    <h3>Total: <span id="totalReserva">S/ 50</span></h3>
+                </div>
+                <div class="calendario-semanal">
+                    <h4>Disponibilidad esta semana:</h4>
+                    <div class="semana-grid">
+                        <div class="dia-item disponible">Lun 20</div>
+                        <div class="dia-item ocupado">Mar 21</div>
+                        <div class="dia-item disponible">Mié 22</div>
+                        <div class="dia-item disponible">Jue 23</div>
+                        <div class="dia-item parcial">Vie 24</div>
+                        <div class="dia-item disponible">Sáb 25</div>
+                        <div class="dia-item disponible">Dom 26</div>
+                    </div>
+                    <div class="leyenda">
+                        <span><div class="dot disponible"></div> Disponible</span>
+                        <span><div class="dot parcial"></div> Parcial</span>
+                        <span><div class="dot ocupado"></div> Ocupado</span>
+                    </div>
+                </div>
+                <button class="btn-confirmar-reserva">Confirmar Reserva</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/sites/js/ccp-loreto.js"></script>
+</body>
 </html>
