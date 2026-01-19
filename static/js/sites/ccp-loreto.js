@@ -1,261 +1,17 @@
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    initParticles();
     initHeader();
+    initSideMenu();
     initModals();
     initBottomNav();
     initVoiceSearch();
-    initScrollAnimations();
+    initConvenios();
+    initReservas();
+    initTabs();
 });
 
-// Header scroll behavior
-function initHeader() {
-    const header = document.querySelector('.header');
-    let lastScroll = 0;
-
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        
-        if (currentScroll > 100) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-        
-        lastScroll = currentScroll;
-    });
-
-    // Menu button
-    const menuBtn = document.getElementById('menuBtn');
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            // TODO: Implementar menú móvil si se requiere
-            console.log('Menu clicked');
-        });
-    }
-}
-
-// Modals
-function initModals() {
-    const modals = {
-        consultas: document.getElementById('consultasModal'),
-        directivos: document.getElementById('directivosModal'),
-        transparencia: null // Se puede agregar después
-    };
-
-    // Abrir modales desde botones de navegación
-    document.querySelectorAll('[data-modal]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const modalName = btn.getAttribute('data-modal');
-            if (modals[modalName]) {
-                openModal(modals[modalName]);
-            }
-        });
-    });
-
-    // Botón consultas
-    const consultasBtn = document.getElementById('consultasBtn');
-    if (consultasBtn) {
-        consultasBtn.addEventListener('click', () => {
-            openModal(modals.consultas);
-        });
-    }
-
-    // Cerrar modales
-    document.querySelectorAll('.modal-close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeAllModals();
-        });
-    });
-
-    // Cerrar al hacer clic en overlay
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', () => {
-            closeAllModals();
-        });
-    });
-
-    // Cerrar con tecla ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeAllModals();
-        }
-    });
-}
-
-function openModal(modal) {
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function closeAllModals() {
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.classList.remove('active');
-    });
-    document.body.style.overflow = '';
-}
-
-// Bottom Navigation
-function initBottomNav() {
-    const reactivateBtn = document.getElementById('reactivateBtn');
-    
-    if (reactivateBtn) {
-        reactivateBtn.addEventListener('click', () => {
-            // Scroll suave a sección de reactivación o redirigir
-            const reactivateSection = document.getElementById('reactivate');
-            if (reactivateSection) {
-                reactivateSection.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                // Redirigir a página de reactivación
-                window.location.href = '/colegiados/';
-            }
-        });
-    }
-
-    // Destacar botón activo según scroll
-    const navItems = document.querySelectorAll('.nav-item');
-    window.addEventListener('scroll', () => {
-        const scrollPos = window.pageYOffset;
-        
-        navItems.forEach(item => {
-            item.classList.remove('active');
-        });
-    });
-}
-
-// Voice Search
-function initVoiceSearch() {
-    const voiceBtn = document.getElementById('voiceBtn');
-    const searchInput = document.querySelector('.search-input');
-    
-    if (!voiceBtn || !searchInput) return;
-
-    // Verificar si el navegador soporta reconocimiento de voz
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-        console.log('Reconocimiento de voz no soportado');
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-PE';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    voiceBtn.addEventListener('click', () => {
-        voiceBtn.classList.add('active');
-        recognition.start();
-    });
-
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        searchInput.value = transcript;
-        voiceBtn.classList.remove('active');
-        
-        // Procesar búsqueda
-        processSearch(transcript);
-    };
-
-    recognition.onerror = (event) => {
-        console.error('Error en reconocimiento de voz:', event.error);
-        voiceBtn.classList.remove('active');
-    };
-
-    recognition.onend = () => {
-        voiceBtn.classList.remove('active');
-    };
-
-    // Quick queries
-    document.querySelectorAll('.query-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const query = chip.textContent;
-            searchInput.value = query;
-            processSearch(query);
-        });
-    });
-
-    // Enter en input
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            processSearch(searchInput.value);
-        }
-    });
-}
-
-function processSearch(query) {
-    console.log('Procesando búsqueda:', query);
-    
-    // Aquí iría la lógica de búsqueda con HTMX
-    // Por ahora, simulamos un resultado
-    
-    const searchResults = {
-        'estado de colegiatura': '/consulta-de-habilidad/',
-        'requisitos para colegiarse': '/colegiados/',
-        'alquiler de ambientes': '/alquiler-de-ambientes/',
-        'próximos eventos': '/#eventos',
-        'comunicados recientes': '/#comunicados',
-        'directivos actuales': '/consejo-directivo/'
-    };
-
-    const queryLower = query.toLowerCase();
-    
-    for (const [key, url] of Object.entries(searchResults)) {
-        if (queryLower.includes(key)) {
-            window.location.href = url;
-            return;
-        }
-    }
-    
-    // Si no hay coincidencia exacta, mostrar resultados generales
-    alert(`Buscando: "${query}"`);
-}
-
-// Scroll Animations
-function initScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, {
-        threshold: 0.1
-    });
-
-    // Observar elementos que queremos animar
-    document.querySelectorAll('.stat-card, .service-card').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-// Smooth scroll para enlaces internos
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Parallax effect para hero (si se usa hero-parallax)
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const parallaxElements = document.querySelectorAll('.parallax-layer');
-    
-    parallaxElements.forEach((el, index) => {
-        const speed = (index + 1) * 0.2;
-        el.style.transform = `translateY(${scrolled * speed}px)`;
-    });
-});
-
-// Particle animation para hero-particles
+// Partículas Canvas
 function initParticles() {
     const canvas = document.getElementById('particlesCanvas');
     if (!canvas) return;
@@ -265,15 +21,15 @@ function initParticles() {
     canvas.height = window.innerHeight;
     
     const particles = [];
-    const particleCount = 100;
+    const particleCount = 80;
     
     class Particle {
         constructor() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 3 + 1;
-            this.speedX = Math.random() * 1 - 0.5;
-            this.speedY = Math.random() * 1 - 0.5;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = Math.random() * 0.5 - 0.25;
+            this.speedY = Math.random() * 0.5 - 0.25;
             this.opacity = Math.random() * 0.5 + 0.2;
         }
         
@@ -314,8 +70,8 @@ function initParticles() {
                 const dy = particles[i].y - particles[j].y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < 100) {
-                    ctx.strokeStyle = `rgba(212, 175, 55, ${0.2 * (1 - distance / 100)})`;
+                if (distance < 120) {
+                    ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 * (1 - distance / 120)})`;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
@@ -336,44 +92,334 @@ function initParticles() {
     });
 }
 
-// Llamar a initParticles si existe el canvas
-if (document.getElementById('particlesCanvas')) {
-    initParticles();
+// Header
+function initHeader() {
+    const header = document.querySelector('.header');
+    
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 100) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
 }
 
-// Performance: Lazy loading para imágenes
-document.addEventListener('DOMContentLoaded', () => {
-    const images = document.querySelectorAll('img[data-src]');
+// Menú Lateral
+function initSideMenu() {
+    const menuBtn = document.getElementById('menuBtn');
+    const sideMenu = document.getElementById('sideMenu');
+    const closeSideMenu = document.getElementById('closeSideMenu');
+    const overlay = sideMenu?.querySelector('.side-menu-overlay');
     
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-                observer.unobserve(img);
+    menuBtn?.addEventListener('click', () => {
+        sideMenu?.classList.add('active');
+    });
+    
+    closeSideMenu?.addEventListener('click', () => {
+        sideMenu?.classList.remove('active');
+    });
+    
+    overlay?.addEventListener('click', () => {
+        sideMenu?.classList.remove('active');
+    });
+}
+
+// Modals
+function initModals() {
+    const modals = {
+        consultas: document.getElementById('consultasModal'),
+        directivos: document.getElementById('directivosModal'),
+        transparencia: document.getElementById('transparenciaModal'),
+        reactivacion: document.getElementById('reactivacionModal'),
+        reserva: document.getElementById('reservaModal')
+    };
+
+    // Botones para abrir modales
+    document.querySelectorAll('[data-modal]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modalName = btn.getAttribute('data-modal');
+            if (modals[modalName]) {
+                openModal(modals[modalName]);
+            }
+        });
+    });
+
+    // Botón consultas
+    const consultasBtn = document.getElementById('consultasBtn');
+    consultasBtn?.addEventListener('click', () => {
+        openModal(modals.consultas);
+    });
+
+    // Botón reactivación hero
+    const btnReactivaHero = document.getElementById('btnReactivaHero');
+    btnReactivaHero?.addEventListener('click', () => {
+        openModal(modals.reactivacion);
+    });
+
+    // Cerrar modales
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+            closeAllModals();
+        });
+    });
+
+    // Cerrar al hacer clic en overlay
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', () => {
+            closeAllModals();
+        });
+    });
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+}
+
+function openModal(modal) {
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.classList.remove('active');
+    });
+    document.body.style.overflow = '';
+}
+
+// Bottom Navigation
+function initBottomNav() {
+    const reactivateBtn = document.getElementById('reactivateBtn');
+    const reactivacionModal = document.getElementById('reactivacionModal');
+    
+    reactivateBtn?.addEventListener('click', () => {
+        openModal(reactivacionModal);
+    });
+}
+
+// Voice Search
+function initVoiceSearch() {
+    const voiceBtn = document.getElementById('voiceBtn');
+    const searchInput = document.querySelector('.search-input');
+    
+    if (!voiceBtn || !searchInput) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        console.log('Reconocimiento de voz no soportado');
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-PE';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    voiceBtn.addEventListener('click', () => {
+        voiceBtn.classList.add('active');
+        recognition.start();
+    });
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        searchInput.value = transcript;
+        voiceBtn.classList.remove('active');
+        processSearch(transcript);
+    };
+
+    recognition.onerror = () => {
+        voiceBtn.classList.remove('active');
+    };
+
+    recognition.onend = () => {
+        voiceBtn.classList.remove('active');
+    };
+
+    // Quick queries
+    document.querySelectorAll('.query-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const query = chip.textContent;
+            searchInput.value = query;
+            processSearch(query);
+        });
+    });
+
+    // Enter en input
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            processSearch(searchInput.value);
+        }
+    });
+}
+
+function processSearch(query) {
+    const searchResults = {
+        'estado de colegiatura': '/consulta-de-habilidad/',
+        'requisitos para colegiarse': '/colegiados/',
+        'alquiler de ambientes': '/alquiler-de-ambientes/',
+        'próximos eventos': '/#eventos',
+        'comunicados recientes': '/#comunicados',
+        'directivos actuales': '/consejo-directivo/'
+    };
+
+    const queryLower = query.toLowerCase();
+    
+    for (const [key, url] of Object.entries(searchResults)) {
+        if (queryLower.includes(key)) {
+            window.location.href = url;
+            return;
+        }
+    }
+    
+    alert(`Buscando: "${query}"`);
+}
+
+// Convenios - Filtros
+function initConvenios() {
+    const tabBtns = document.querySelectorAll('.convenios-tabs .tab-btn');
+    const convenioCards = document.querySelectorAll('.convenio-card');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const category = btn.getAttribute('data-category');
+            
+            // Actualizar botones activos
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Filtrar cards
+            convenioCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                if (category === 'todos' || cardCategory === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+// Reservas
+function initReservas() {
+    const reservarBtns = document.querySelectorAll('.btn-reservar');
+    const reservaModal = document.getElementById('reservaModal');
+    const ambienteSelect = document.getElementById('ambienteSelect');
+    const duracionInput = document.getElementById('duracion');
+    const totalReserva = document.getElementById('totalReserva');
+    
+    reservarBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const ambiente = btn.getAttribute('data-ambiente');
+            openModal(reservaModal);
+            
+            // Seleccionar ambiente
+            if (ambienteSelect) {
+                ambienteSelect.value = ambiente;
+                calcularTotal();
             }
         });
     });
     
-    images.forEach(img => imageObserver.observe(img));
+    // Calcular total
+    function calcularTotal() {
+        const precios = {
+            'piscina': 50,
+            'futbol': 40,
+            'voley': 35
+        };
+        
+        const ambiente = ambienteSelect?.value || 'piscina';
+        const duracion = parseInt(duracionInput?.value) || 1;
+        const total = precios[ambiente] * duracion;
+        
+        if (totalReserva) {
+            totalReserva.textContent = `S/ ${total}`;
+        }
+    }
+    
+    ambienteSelect?.addEventListener('change', calcularTotal);
+    duracionInput?.addEventListener('input', calcularTotal);
+    
+    // Confirmar reserva
+    const btnConfirmar = document.querySelector('.btn-confirmar-reserva');
+    btnConfirmar?.addEventListener('click', () => {
+        const fecha = document.getElementById('fechaReserva')?.value;
+        const hora = document.getElementById('horaInicio')?.value;
+        
+        if (!fecha || !hora) {
+            alert('Por favor completa todos los campos');
+            return;
+        }
+        
+        alert('Reserva confirmada. Te contactaremos pronto para confirmar el pago.');
+        closeAllModals();
+    });
+}
+
+// Tabs (Reactivación y Transparencia)
+function initTabs() {
+    document.querySelectorAll('.tabs').forEach(tabsContainer => {
+        const tabs = tabsContainer.querySelectorAll('.tab');
+        const contents = tabsContainer.parentElement.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('data-tab');
+                
+                // Actualizar tabs activos
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Mostrar contenido correspondiente
+                contents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+}
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#' || href.length <= 1) return;
+        
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
 });
 
-// Utility: Detectar si es móvil
-function isMobile() {
-    return window.innerWidth <= 768;
-}
-
-// Utility: Formatear números
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-// Exportar funciones útiles para HTMX
-window.ccplUtils = {
-    openModal,
-    closeAllModals,
-    processSearch,
-    isMobile,
-    formatNumber
-};
+// Lazy loading para videos
+document.querySelectorAll('.video-placeholder').forEach(placeholder => {
+    placeholder.addEventListener('click', function() {
+        const wrapper = this.parentElement;
+        const iframe = wrapper.querySelector('iframe');
+        const videoUrl = iframe.getAttribute('data-video-url');
+        
+        if (videoUrl) {
+            iframe.src = videoUrl;
+            this.style.display = 'none';
+        } else {
+            alert('URL del video no configurada');
+        }
+    });
+});
